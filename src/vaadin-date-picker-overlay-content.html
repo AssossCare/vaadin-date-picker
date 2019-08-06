@@ -4,20 +4,20 @@ Copyright (c) 2017 Vaadin Ltd.
 This program is available under Apache License Version 2.0, available at https://vaadin.com/license/
 -->
 
-<link rel="import" href="../../polymer/polymer-element.html">
-<link rel="import" href="../../polymer/lib/mixins/gesture-event-listeners.html">
-<link rel="import" href="../../iron-media-query/iron-media-query.html">
-<link rel="import" href="../../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
-<link rel="import" href="../../iron-a11y-announcer/iron-a11y-announcer.html">
-<link rel="import" href="../../vaadin-button/src/vaadin-button.html">
-<link rel="import" href="../../vaadin-themable-mixin/vaadin-themable-mixin.html">
-<link rel="import" href="../../vaadin-themable-mixin/vaadin-theme-property-mixin.html">
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../iron-media-query/iron-media-query.html">
+<link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="../iron-a11y-announcer/iron-a11y-announcer.html">
+<link rel="import" href="../vaadin-text-field/vaadin-text-field.html">
+<link rel="import" href="../vaadin-button/vaadin-button.html">
+<link rel="import" href="../vaadin-themable-mixin/vaadin-themable-mixin.html">
 <link rel="import" href="vaadin-month-calendar.html">
 <link rel="import" href="vaadin-infinite-scroller.html">
 <link rel="import" href="vaadin-date-picker-helper.html">
 <link rel="import" href="vaadin-date-picker-styles.html">
 
-<dom-module id="vaadin-date-picker-overlay-content">
+<dom-module id="vaadin-date-picker-overlay">
   <template>
     <style>
       :host {
@@ -44,8 +44,22 @@ This program is available under Apache License Version 2.0, available at https:/
         flex-grow: 1;
       }
 
+      [part="clear-button"],
+      [part="toggle-button"],
+      [part="years-toggle-button"]::before {
+        font-family: 'vaadin-date-picker-icons';
+      }
+
       [part="clear-button"]:not([showclear]) {
         display: none;
+      }
+
+      [part="clear-button"]::before {
+        content: "\e901";
+      }
+
+      [part="toggle-button"]::before {
+        content: "\e902";
       }
 
       [part="years-toggle-button"] {
@@ -54,6 +68,10 @@ This program is available under Apache License Version 2.0, available at https:/
 
       [part="years-toggle-button"][desktop] {
         display: none;
+      }
+
+      [part="years-toggle-button"]::before {
+        content: "\e900";
       }
 
       :host(:not([years-visible])) [part="years-toggle-button"]::before {
@@ -171,24 +189,24 @@ This program is available under Apache License Version 2.0, available at https:/
     </div>
 
     <div id="scrollers" desktop$="[[_desktopMode]]" on-track="_track">
-      <vaadin-infinite-scroller id="monthScroller" on-custom-scroll="_onMonthScroll" on-touchstart="_onMonthScrollTouchStart" buffer-size="3" active="[[initialPosition]]" part="months">
+      <vaadin-infinite-scroller id="monthScroller" on-custom-scroll="_onMonthScroll" on-touchstart="_onMonthScrollTouchStart" buffer-size="6" active="[[initialPosition]]" part="months">
         <template>
           <vaadin-month-calendar
-            i18n="[[i18n]]"
-            month="[[_dateAfterXMonths(index)]]"
-            selected-date="{{selectedDate}}"
-            focused-date="[[focusedDate]]"
-            ignore-taps="[[_ignoreTaps]]"
-            show-week-numbers="[[showWeekNumbers]]"
-            min-date="[[minDate]]"
-            max-date="[[maxDate]]"
-            focused$="[[_focused]]"
-            part="month"
-            theme$="[[theme]]">
+                  i18n="[[i18n]]"
+                  month="[[_dateAfterXMonths(index)]]"
+                  selected-date="{{selectedDate}}"
+                  selected-level="{{selectedLevel}}"
+                  focused-date="[[focusedDate]]"
+                  ignore-taps="[[_ignoreTaps]]"
+                  show-week-numbers="[[showWeekNumbers]]"
+                  min-date="[[minDate]]"
+                  max-date="[[maxDate]]"
+                  focused$="[[_focused]]"
+                  part="month">
           </vaadin-month-calendar>
         </template>
       </vaadin-infinite-scroller>
-      <vaadin-infinite-scroller id="yearScroller" on-tap="_onYearTap" on-custom-scroll="_onYearScroll" on-touchstart="_onYearScrollTouchStart" buffer-size="12" active="[[initialPosition]]" part="years">
+      <vaadin-infinite-scroller id="yearScroller" on-tap="_onYearTap" on-custom-scroll="_onYearScroll" on-touchstart="_onYearScrollTouchStart" buffer-size="25" active="[[initialPosition]]" part="years">
         <template>
           <div part="year-number" role="button" current$="[[_isCurrentYear(index)]]" selected$="[[_isSelectedYear(index, selectedDate)]]">
             [[_yearAfterXYears(index)]]
@@ -202,6 +220,13 @@ This program is available under Apache License Version 2.0, available at https:/
       <vaadin-button id="todayButton" part="today-button" disabled="[[!_isTodayAllowed(minDate, maxDate)]]" on-tap="_onTodayTap">
         [[i18n.today]]
       </vaadin-button>
+      <vaadin-button id="monthButton" part="month-button" disabled="[[!_isMonthAllowed(minDate, maxDate)]]" on-tap="_onThisMonthTap">
+        mois courrant
+      </vaadin-button>
+      <vaadin-button id="yearButton" part="year-button" disabled="[[!_isYearAllowed(minDate, maxDate)]]" on-tap="_onThisYearTap">
+        année courrante
+      </vaadin-button>
+      <!-- ToDo julien wathelet buttons mois et années -->
       <vaadin-button id="cancelButton" part="cancel-button" on-tap="_cancel">
         [[i18n.cancel]]
       </vaadin-button>
@@ -210,18 +235,14 @@ This program is available under Apache License Version 2.0, available at https:/
     <iron-media-query query="(min-width: 375px)" query-matches="{{_desktopMode}}"></iron-media-query>
   </template>
   <script>
-    (function() {
+    {
       /**
-       * @memberof Vaadin
        * @private
        */
-      class DatePickerOverlayContentElement extends
-        Vaadin.ThemableMixin(
-          Vaadin.ThemePropertyMixin(
-            Polymer.GestureEventListeners(Polymer.Element))) {
+      class DatePickerOverlayElement extends Vaadin.ThemableMixin(Polymer.GestureEventListeners(Polymer.Element)) {
 
         static get is() {
-          return 'vaadin-date-picker-overlay-content';
+          return 'vaadin-date-picker-overlay';
         }
 
         static get properties() {
@@ -296,7 +317,15 @@ This program is available under Apache License Version 2.0, available at https:/
             /**
              * Input label
              */
-            label: String
+            label: String,
+
+            /**
+             * @JulienWathelet can selected a date in different level (day, month, year)
+             */
+            selectedLevel:{
+              type: String,
+              value:"day"
+            }
           };
         }
 
@@ -304,7 +333,7 @@ This program is available under Apache License Version 2.0, available at https:/
           super.ready();
           this.setAttribute('tabindex', 0);
           this.addEventListener('keydown', this._onKeydown.bind(this));
-          Polymer.Gestures.addListener(this, 'tap', this._stopPropagation);
+          this.addEventListener('tap', this._stopPropagation.bind(this));
           this.addEventListener('focus', this._onOverlayFocus.bind(this));
           this.addEventListener('blur', this._onOverlayBlur.bind(this));
         }
@@ -318,7 +347,7 @@ This program is available under Apache License Version 2.0, available at https:/
 
         connectedCallback() {
           super.connectedCallback();
-          this._closeYearScroller();
+          this._translateX = this._yearScrollerWidth;
           this._toggleAnimateClass(true);
           Polymer.Gestures.setTouchAction(this.$.scrollers, 'pan-y');
           Polymer.IronA11yAnnouncer.requestAvailability();
@@ -443,12 +472,12 @@ This program is available under Apache License Version 2.0, available at https:/
         _doIgnoreTaps() {
           this._ignoreTaps = true;
           this._debouncer = Polymer.Debouncer.debounce(this._debouncer,
-            Polymer.Async.timeOut.after(300), () => this._ignoreTaps = false);
+                  Polymer.Async.timeOut.after(300), () => this._ignoreTaps = false);
         }
 
         _formatDisplayed(date, formatDate, label) {
           if (date) {
-            return formatDate(Vaadin.DatePickerHelper._extractDateParts(date));
+            return formatDate(date);
           } else {
             return label;
           }
@@ -456,10 +485,36 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _onTodayTap() {
           var today = new Date();
-
-          if (Math.abs(this.$.monthScroller.position - this._differenceInMonths(today, this._originDate)) < 0.001) {
-            // Select today only if the month scroller is positioned approximately
+          if (this.$.monthScroller.position === this._differenceInMonths(today, this._originDate)) {
+            // Select today only if the month scroller is positioned exactly
             // at the beginning of the current month
+            this.selectedLevel = "day"
+            this.selectedDate = today;
+            this._close();
+          } else {
+            this._scrollToCurrentMonth();
+          }
+        }
+
+        _onThisMonthTap() {
+          var today = new Date();
+          if (this.$.monthScroller.position === this._differenceInMonths(today, this._originDate)) {
+            // Select today only if the month scroller is positioned exactly
+            // at the beginning of the current month
+            this.selectedLevel="month"
+            this.selectedDate = today;
+            this._close();
+          } else {
+            this._scrollToCurrentMonth();
+          }
+        }
+
+        _onThisYearTap() {
+          var today = new Date();
+          if (this.$.monthScroller.position === this._differenceInMonths(today, this._originDate)) {
+            // Select today only if the month scroller is positioned exactly
+            // at the beginning of the current month
+            this.selectedLevel="year"
             this.selectedDate = today;
             this._close();
           } else {
@@ -655,15 +710,10 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _clear() {
           this.selectedDate = '';
+          this._close();
         }
 
         _close() {
-          const overlayContent = this.getRootNode().host;
-          const overlay = overlayContent ? overlayContent.getRootNode().host : null;
-          if (overlay) {
-            overlay.opened = false;
-          }
-
           this.dispatchEvent(new CustomEvent('close', {bubbles: true, composed: true}));
         }
 
@@ -680,7 +730,7 @@ This program is available under Apache License Version 2.0, available at https:/
          * Keyboard Navigation
          */
         _eventKey(e) {
-          var keys = ['down', 'up', 'right', 'left', 'enter', 'space', 'home', 'end', 'pageup', 'pagedown', 'tab', 'esc'];
+          var keys = ['down', 'up', 'right', 'left', 'enter', 'space', 'home', 'end', 'pageup', 'pagedown', 'tab'];
 
           for (var i = 0; i < keys.length; i++) {
             var k = keys[i];
@@ -779,24 +829,12 @@ This program is available under Apache License Version 2.0, available at https:/
               case 'pageup':
                 this._moveFocusByMonths(e.shiftKey ? -12 : -1);
                 break;
-              case 'esc':
-                this._cancel();
-                break;
             }
           }
         }
 
         _currentlyFocusedDate() {
           return this.focusedDate || this.selectedDate || this.initialPosition || new Date();
-        }
-
-        _focusDate(dateToFocus) {
-          this.focusedDate = dateToFocus;
-          this._focusedMonthDate = dateToFocus.getDate();
-        }
-
-        _focusClosestDate(focus) {
-          this._focusDate(Vaadin.DatePickerHelper._getClosestDate(focus, [this.minDate, this.maxDate]));
         }
 
         _moveFocusByDays(days) {
@@ -807,18 +845,22 @@ This program is available under Apache License Version 2.0, available at https:/
           dateToFocus.setDate(focus.getDate() + days);
 
           if (this._dateAllowed(dateToFocus, this.minDate, this.maxDate)) {
-            this._focusDate(dateToFocus);
+            this.focusedDate = dateToFocus;
+            this._focusedMonthDate = this.focusedDate.getDate();
           } else {
             if (this._dateAllowed(focus, this.minDate, this.maxDate)) {
               // Move to min or max date
               if (days > 0) { // down or right
-                this._focusDate(this.maxDate);
+                this.focusedDate = this.maxDate;
+                this._focusedMonthDate = this.maxDate.getDate();
               } else { // up or left
-                this._focusDate(this.minDate);
+                this.focusedDate = this.minDate;
+                this._focusedMonthDate = this.minDate.getDate();
               }
             } else {
               // Move to closest allowed date
-              this._focusClosestDate(focus);
+              this.focusedDate = Vaadin.DatePickerHelper._getClosestDate(focus, [this.minDate, this.maxDate]);
+              this._focusedMonthDate = this.focusedDate.getDate();
             }
           }
         }
@@ -842,13 +884,16 @@ This program is available under Apache License Version 2.0, available at https:/
             if (this._dateAllowed(focus, this.minDate, this.maxDate)) {
               // Move to min or max date
               if (months > 0) { // pagedown
-                this._focusDate(this.maxDate);
+                this.focusedDate = this.maxDate;
+                this._focusedMonthDate = this.maxDate.getDate();
               } else { // pageup
-                this._focusDate(this.minDate);
+                this.focusedDate = this.minDate;
+                this._focusedMonthDate = this.minDate.getDate();
               }
             } else {
               // Move to closest allowed date
-              this._focusClosestDate(focus);
+              this.focusedDate = Vaadin.DatePickerHelper._getClosestDate(focus, [this.minDate, this.maxDate]);
+              this._focusedMonthDate = this.focusedDate.getDate();
             }
           }
         }
@@ -866,14 +911,17 @@ This program is available under Apache License Version 2.0, available at https:/
           }
 
           if (this._dateAllowed(dateToFocus, this.minDate, this.maxDate)) {
-            this._focusDate(dateToFocus);
+            this.focusedDate = dateToFocus;
+            this._focusedMonthDate = this.focusedDate.getDate();
           } else {
             if (this._dateAllowed(focusedDate, this.minDate, this.maxDate)) {
               // Move to minDate or maxDate
-              this._focusDate(this[property]);
+              this.focusedDate = this[property];
+              this._focusedMonthDate = this[property].getDate();
             } else {
               // Move to closest allowed date
-              this._focusClosestDate(focusedDate);
+              this.focusedDate = Vaadin.DatePickerHelper._getClosestDate(focusedDate, [this.minDate, this.maxDate]);
+              this._focusedMonthDate = this.focusedDate.getDate();
             }
           }
         }
@@ -891,12 +939,52 @@ This program is available under Apache License Version 2.0, available at https:/
           return this._dateAllowed(todayMidnight, min, max);
         }
 
+        _isMonthAllowed(min,max){
+          const today = new Date();
+          const firstDayOfMonth = new Date(0,0);
+          firstDayOfMonth.setFullYear(today.getFullYear());
+          firstDayOfMonth.setMonth(today.getMonth());
+          firstDayOfMonth.setDate(1);
+          const lastDayOfMonth = new Date(0,0);
+          lastDayOfMonth.setFullYear(today.getFullYear());
+          lastDayOfMonth.setMonth(today.getMonth()+1);
+          lastDayOfMonth.setDate(1);
+
+          let allowed = !!(!max || !min);
+          if(allowed)return allowed;
+          allowed = !!(firstDayOfMonth<=max && lastDayOfMonth>min)
+          return allowed
+        }
+
+        _isYearAllowed(min,max){
+          const today = new Date();
+          const firstDayOfYear = new Date(0,0);
+          firstDayOfYear.setFullYear(today.getFullYear());
+          firstDayOfYear.setMonth(1);
+          firstDayOfYear.setDate(1);
+          const lastDayOfYear = new Date(0,0);
+          lastDayOfYear.setFullYear(today.getFullYear()+1);
+          lastDayOfYear.setMonth(1);
+          lastDayOfYear.setDate(1);
+
+          let allowed = !!(!max || !min);
+          if(allowed)return allowed;
+          allowed = !!(firstDayOfYear<=max && lastDayOfYear>min)
+          return allowed
+        }
+
         _stopPropagation(e) {
           e.stopPropagation();
         }
       }
 
-      customElements.define(DatePickerOverlayContentElement.is, DatePickerOverlayContentElement);
-    })();
+      customElements.define(DatePickerOverlayElement.is, DatePickerOverlayElement);
+
+      /**
+       * @namespace Vaadin
+       */
+      window.Vaadin = window.Vaadin || {};
+      Vaadin.DatePickerOverlayElement = DatePickerOverlayElement;
+    }
   </script>
 </dom-module>

@@ -8,18 +8,18 @@ module.exports = {
     local: {
       browserOptions: {
         chrome: [
-          'headless',
+            'headless',
           'disable-gpu',
           'no-sandbox'
         ]
       }
-    },
+      },
     // MAGI REMOVE START
     istanbul: {
       dir: './coverage',
       reporters: ['text-summary', 'lcov'],
       include: [
-        '**/vaadin-date-picker/src/*.html'
+          '**/vaadin-date-picker/src/*.html'
       ],
       exclude: [],
       thresholds: {
@@ -33,27 +33,27 @@ module.exports = {
 
   registerHooks: function(context) {
     const saucelabsPlatformsMobile = [
-      'iOS Simulator/iphone@12.2',
+        'iOS Simulator/iphone@12.2',
       'iOS Simulator/iphone@10.3'
     ];
 
     const saucelabsPlatformsMicrosoft = [
-      'Windows 10/microsoftedge@18',
+        'Windows 10/microsoftedge@18',
       'Windows 10/internet explorer@11'
     ];
 
     const saucelabsPlatformsDesktop = [
-      'macOS 10.13/safari@latest'
+        'macOS 10.13/safari@latest'
     ];
 
     const saucelabsPlatforms = [
-      ...saucelabsPlatformsMobile,
+        ...saucelabsPlatformsMobile,
       ...saucelabsPlatformsMicrosoft,
       ...saucelabsPlatformsDesktop
     ];
 
     const cronPlatforms = [
-      {
+        {
         deviceName: 'Android GoogleAPI Emulator',
         platformName: 'Android',
         platformVersion: '8.1',

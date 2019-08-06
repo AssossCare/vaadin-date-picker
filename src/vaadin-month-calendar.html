@@ -4,11 +4,12 @@ Copyright (c) 2017 Vaadin Ltd.
 This program is available under Apache License Version 2.0, available at https://vaadin.com/license/
 -->
 
-<link rel="import" href="../../polymer/polymer-element.html">
-<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
-<link rel="import" href="../../polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="vaadin-date-picker-helper.html">
-<link rel="import" href="../../vaadin-themable-mixin/vaadin-themable-mixin.html">
+<link rel="import" href="../vaadin-themable-mixin/vaadin-themable-mixin.html">
+<link rel="import" href="vaadin-date-picker-styles.html">
 
 <dom-module id="vaadin-month-calendar">
   <template>
@@ -54,7 +55,10 @@ This program is available under Apache License Version 2.0, available at https:/
       }
     </style>
 
-    <div part="month-header" role="heading">[[_getTitle(month, i18n.monthNames)]]</div>
+    <div part="month-header" role="heading">
+      <span part="month-part-header" selected$="[[_isMonthSelected(month, selectedDate, selectedLevel)]]" on-tap="_monthTap" month="[[month]]">[[_getTitle(month, i18n.monthNames)]]</span>
+      <span part="year-part-header" selected$="[[_isYearSelected(month, selectedDate, selectedLevel)]]" on-tap="_yearTap" month="[[month]]">[[_getYear(month)]]</span>
+    </div><!-- ToDo julien wathelet ajouter le on-tap pour prendre la valeur mois-->
     <div id="monthGrid" on-tap="_handleTap" on-touchend="_preventDefault" on-touchstart="_onMonthGridTouchStart">
       <div id="weekdays-container">
         <div hidden="[[!_showWeekSeparator(showWeekNumbers, i18n.firstDayOfWeek)]]" part="weekday"></div>
@@ -73,24 +77,23 @@ This program is available under Apache License Version 2.0, available at https:/
         <div id="days">
           <template is="dom-repeat" items="[[_days]]">
             <div
-                part="date"
-                today$="[[_isToday(item)]]"
-                selected$="[[_dateEquals(item, selectedDate)]]"
-                focused$="[[_dateEquals(item, focusedDate)]]"
-                date="[[item]]"
-                disabled$="[[!_dateAllowed(item, minDate, maxDate)]]"
-                role$="[[_getRole(item)]]"
-                aria-label$="[[_getAriaLabel(item)]]"
-                aria-disabled$="[[_getAriaDisabled(item, minDate, maxDate)]]">[[_getDate(item)]]</div>
+                    part="date"
+                    today$="[[_isToday(item)]]"
+                    selected$="[[_isDateSelected(item, selectedDate, selectedLevel)]]"
+                    focused$="[[_dateEquals(item, focusedDate)]]"
+                    date="[[item]]"
+                    disabled$="[[!_dateAllowed(item, minDate, maxDate)]]"
+                    role$="[[_getRole(item)]]"
+                    aria-label$="[[_getAriaLabel(item)]]"
+                    aria-disabled$="[[_getAriaDisabled(item, minDate, maxDate)]]">[[_getDate(item)]]</div>
           </template>
         </div>
       </div>
     </div>
   </template>
   <script>
-    (function() {
+    {
       /**
-       * @memberof Vaadin
        * @private
        */
       class MonthCalendarElement extends Vaadin.ThemableMixin(Polymer.GestureEventListeners(Polymer.Element)) {
@@ -164,6 +167,14 @@ This program is available under Apache License Version 2.0, available at https:/
               type: Boolean,
               reflectToAttribute: true,
               computed: '_isDisabled(month, minDate, maxDate)'
+            },
+
+            /**
+             * @JulienWathelet can selected a date in different level (day, month, year)
+             */
+            selectedLevel:{
+              type: String,
+              value:"day"
             }
           };
         }
@@ -172,6 +183,18 @@ This program is available under Apache License Version 2.0, available at https:/
           return [
             '_showWeekNumbersChanged(showWeekNumbers, i18n.firstDayOfWeek)'
           ];
+        }
+
+        _isDateSelected(date1,date2){
+          return this.selectedLevel==="day" && this._dateEquals(date1,date2)
+        }
+
+        _isMonthSelected(month,date){
+          return this.selectedLevel==="month" && date && date.getMonth()==month.getMonth()
+        }
+
+        _isYearSelected(month,date){
+          return this.selectedLevel==="year" && date && date.getFullYear()==month.getFullYear()
         }
 
         _dateEquals(date1, date2) {
@@ -194,24 +217,24 @@ This program is available under Apache License Version 2.0, available at https:/
           var lastDate = new Date(0, 0);
           lastDate.setFullYear(month.getFullYear());
           lastDate.setMonth(month.getMonth() + 1);
-          lastDate.setDate(0);
-
-          if ((minDate && maxDate)
-            && minDate.getMonth() === maxDate.getMonth()
-            && minDate.getMonth() === month.getMonth()
-            && maxDate.getDate() - minDate.getDate() >= 0) {
-            return false;
-          }
+          lastDate.setDate(-1);
 
           return !this._dateAllowed(firstDate, minDate, maxDate)
-            && !this._dateAllowed(lastDate, minDate, maxDate);
+                  && !this._dateAllowed(lastDate, minDate, maxDate);
         }
 
         _getTitle(month, monthNames) {
           if (month === undefined || monthNames === undefined) {
-            return;
+            return "";
           }
           return this.i18n.formatTitle(monthNames[month.getMonth()], month.getFullYear());
+        }
+
+        _getYear(month) {
+          if (month === undefined) {
+            return "";
+          }
+          return month.getFullYear();
         }
 
         _onMonthGridTouchStart() {
@@ -233,7 +256,7 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _getWeekDayNames(weekDayNames, weekDayNamesShort, showWeekNumbers, firstDayOfWeek) {
           if (weekDayNames === undefined || weekDayNamesShort === undefined ||
-            showWeekNumbers === undefined || firstDayOfWeek === undefined) {
+                  showWeekNumbers === undefined || firstDayOfWeek === undefined) {
             return;
           }
           weekDayNames = this._applyFirstDayOfWeek(weekDayNames, firstDayOfWeek);
@@ -313,13 +336,30 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _getWeekNumbers(dates) {
           return dates
-            .map(date => this._getWeekNumber(date, dates))
-            .filter((week, index, arr) => arr.indexOf(week) === index);
+                  .map(date => this._getWeekNumber(date, dates))
+                  .filter((week, index, arr) => arr.indexOf(week) === index);
         }
 
         _handleTap(e) {
           if (!this.ignoreTaps && !this._notTapping && e.target.date && !e.target.hasAttribute('disabled')) {
+            this.selectedLevel="day"
             this.selectedDate = e.target.date;
+            this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
+          }
+        }
+
+        _monthTap(e) {
+          if (!this.ignoreTaps && !this._notTapping && e.target.month && !e.target.hasAttribute('disabled')) {
+            this.selectedLevel="month"
+            this.selectedDate = e.target.month;
+            this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
+          }
+        }
+
+        _yearTap(e) {
+          if (!this.ignoreTaps && !this._notTapping && e.target.month && !e.target.hasAttribute('disabled')) {
+            this.selectedLevel="year"
+            this.selectedDate = e.target.month;
             this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
           }
         }
@@ -329,7 +369,7 @@ This program is available under Apache License Version 2.0, available at https:/
         }
 
         _getRole(date) {
-          return date ? 'button' : 'presentation';
+          return date ? 'button' : 'presentational';
         }
 
         _getAriaLabel(date) {
@@ -338,9 +378,9 @@ This program is available under Apache License Version 2.0, available at https:/
           }
 
           var ariaLabel = this._getDate(date) + ' ' +
-            this.i18n.monthNames[date.getMonth()] + ' ' +
-            date.getFullYear() + ', ' +
-            this.i18n.weekdays[date.getDay()];
+                  this.i18n.monthNames[date.getMonth()] + ' ' +
+                  date.getFullYear() + ', ' +
+                  this.i18n.weekdays[date.getDay()];
 
           if (this._isToday(date)) {
             ariaLabel += ', ' + this.i18n.today;
@@ -358,6 +398,12 @@ This program is available under Apache License Version 2.0, available at https:/
       }
 
       customElements.define(MonthCalendarElement.is, MonthCalendarElement);
-    })();
+
+      /**
+       * @namespace Vaadin
+       */
+      window.Vaadin = window.Vaadin || {};
+      Vaadin.MonthCalendarElement = MonthCalendarElement;
+    }
   </script>
 </dom-module>
