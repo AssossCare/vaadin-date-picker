@@ -99,12 +99,12 @@ This program is available under Apache License Version 2.0, available at https:/
               fullscreen$="[[_fullscreen]]"
               label="[[label]]"
               selected-date="{{_selectedDate}}"
-              selected-level="{{_selectedLevel}}"
               slot="dropdown-content"
               focused-date="{{_focusedDate}}"
               show-week-numbers="[[showWeekNumbers]]"
               min-date="[[_minDate]]"
               max-date="[[_maxDate]]"
+              accuracy="{{accuracy}}"
               role="dialog"
               part="overlay">
       </vaadin-date-picker-overlay>
@@ -245,6 +245,7 @@ This program is available under Apache License Version 2.0, available at https:/
         _clear(e) {
           e.stopPropagation();
           this.value = '';
+          this.accuracy = '';
           this.close();
           this.validate();
         }
@@ -259,6 +260,17 @@ This program is available under Apache License Version 2.0, available at https:/
         }
 
         set _inputValue(value) {
+          let parts=value.split('/')
+          const length = parts.length
+          if(this.accuracy==="year" && length>=1){
+            value=parts[length-1];
+          }
+          if(this.accuracy==="month" && length>=2){
+            value=parts[length-2]+'/'+parts[length-1];
+          }
+          if(this.accuracy==="day" && length>=3){
+            value=parts[length-3]+'/'+parts[length-2]+'/'+parts[length-1];
+          }
           this._inputElement.value = value;
         }
 
