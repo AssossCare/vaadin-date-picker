@@ -127,14 +127,14 @@
         padding: 5px;
       }
 
-      [part="month-part-header"][selected]{
-        font-weight:bold;
-        background-color: #eee;
+      [part="month-part-header"][selected],
+      [part="year-part-header"][selected]{
+        text-decoration:underline;
       }
 
-      [part="year-part-header"][selected]{
-        font-weight:bold;
-        background-color: #eee;
+      [part="month-part-header"][focused],
+      [part="year-part-header"][focused] {
+        background: #eee;
       }
 
       [part="weekday"],

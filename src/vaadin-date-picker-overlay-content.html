@@ -17,7 +17,7 @@ This program is available under Apache License Version 2.0, available at https:/
 <link rel="import" href="vaadin-date-picker-helper.html">
 <link rel="import" href="vaadin-date-picker-styles.html">
 
-<dom-module id="vaadin-date-picker-overlay">
+<dom-module id="vaadin-date-picker-overlay-content">
   <template>
     <style>
       :host {
@@ -195,13 +195,13 @@ This program is available under Apache License Version 2.0, available at https:/
                   i18n="[[i18n]]"
                   month="[[_dateAfterXMonths(index)]]"
                   selected-date="{{selectedDate}}"
-                  selected-level="{{selectedLevel}}"
                   focused-date="[[focusedDate]]"
                   ignore-taps="[[_ignoreTaps]]"
                   show-week-numbers="[[showWeekNumbers]]"
                   min-date="[[minDate]]"
                   max-date="[[maxDate]]"
                   focused$="[[_focused]]"
+                  accuracy="{{accuracy}}"
                   part="month">
           </vaadin-month-calendar>
         </template>
@@ -235,14 +235,17 @@ This program is available under Apache License Version 2.0, available at https:/
     <iron-media-query query="(min-width: 375px)" query-matches="{{_desktopMode}}"></iron-media-query>
   </template>
   <script>
-    {
+    (function() {
       /**
        * @private
        */
-      class DatePickerOverlayElement extends Vaadin.ThemableMixin(Polymer.GestureEventListeners(Polymer.Element)) {
+      class DatePickerOverlayContentElement extends
+              Vaadin.ThemableMixin(
+                      Vaadin.ThemePropertyMixin(
+                              Polymer.GestureEventListeners(Polymer.Element))) {
 
         static get is() {
-          return 'vaadin-date-picker-overlay';
+          return 'vaadin-date-picker-overlay-content';
         }
 
         static get properties() {
@@ -320,11 +323,11 @@ This program is available under Apache License Version 2.0, available at https:/
             label: String,
 
             /**
-             * @JulienWathelet can selected a date in different level (day, month, year)
+             * @JulienWathelet can selected a date with a different accuracy (day, month, year)
              */
-            selectedLevel:{
+            accuracy:{
               type: String,
-              value:"day"
+              value:""
             }
           };
         }
@@ -488,7 +491,7 @@ This program is available under Apache License Version 2.0, available at https:/
           if (this.$.monthScroller.position === this._differenceInMonths(today, this._originDate)) {
             // Select today only if the month scroller is positioned exactly
             // at the beginning of the current month
-            this.selectedLevel = "day"
+            this.accuracy = "day"
             this.selectedDate = today;
             this._close();
           } else {
@@ -501,7 +504,7 @@ This program is available under Apache License Version 2.0, available at https:/
           if (this.$.monthScroller.position === this._differenceInMonths(today, this._originDate)) {
             // Select today only if the month scroller is positioned exactly
             // at the beginning of the current month
-            this.selectedLevel="month"
+            this.accuracy="month"
             this.selectedDate = today;
             this._close();
           } else {
@@ -514,7 +517,7 @@ This program is available under Apache License Version 2.0, available at https:/
           if (this.$.monthScroller.position === this._differenceInMonths(today, this._originDate)) {
             // Select today only if the month scroller is positioned exactly
             // at the beginning of the current month
-            this.selectedLevel="year"
+            this.accuracy="year"
             this.selectedDate = today;
             this._close();
           } else {
@@ -978,13 +981,7 @@ This program is available under Apache License Version 2.0, available at https:/
         }
       }
 
-      customElements.define(DatePickerOverlayElement.is, DatePickerOverlayElement);
-
-      /**
-       * @namespace Vaadin
-       */
-      window.Vaadin = window.Vaadin || {};
-      Vaadin.DatePickerOverlayElement = DatePickerOverlayElement;
-    }
+      customElements.define(DatePickerOverlayContentElement.is, DatePickerOverlayContentElement);
+    })();
   </script>
 </dom-module>

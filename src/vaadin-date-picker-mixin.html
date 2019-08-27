@@ -26,6 +26,12 @@ This program is available under Apache License Version 2.0, available at https:/
                 _selectedDate: {
                     type: Date
                 },
+                /**
+                 * The current selected accuracy.
+                 */
+                _accuracy: {
+                    type: String
+                },
 
                 _focusedDate: Date,
 
@@ -258,7 +264,7 @@ This program is available under Apache License Version 2.0, available at https:/
                                 }
                             },
                             formatTitle: (monthName, fullYear) => {
-                                return monthName + ' ' + fullYear;
+                                return monthName;
                             }
                         };
                     }
@@ -340,7 +346,8 @@ This program is available under Apache License Version 2.0, available at https:/
                 '_validateInput(_selectedDate, _minDate, _maxDate)',
                 '_selectedDateChanged(_selectedDate, i18n.formatDate)',
                 '_focusedDateChanged(_focusedDate, i18n.formatDate)',
-                '_announceFocusedDate(_focusedDate, opened, _ignoreAnnounce)'
+                '_announceFocusedDate(_focusedDate, opened, _ignoreAnnounce)',
+                '_accuracyChanged(_accuracy)'
             ];
         }
 
@@ -415,8 +422,10 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _formatISO(date) {
             return date instanceof Date ?
-                (new Date(date.getTime() - date.getTimezoneOffset() * 60000)).toISOString().split('T')[0] :
-                '';
+                this.accuracy==="year" ? date.getFullYear()+"-00-00" :
+                    this.accuracy==="month" ? date.getFullYear()+"-"+(date.getMonth()>8 ? (date.getMonth()+1) : "0"+(date.getMonth()+1))+"-00" :
+                        this.accuracy==="day" ? date.getFullYear()+"-"+(date.getMonth()>8 ? (date.getMonth()+1) : "0"+(date.getMonth()+1))+"-"+(date.getDate()<10 ? "0"+date.getDate() : date.getDate()) : ""
+                : '';
         }
 
         _selectedDateChanged(selectedDate, formatDate) {
@@ -426,6 +435,10 @@ This program is available under Apache License Version 2.0, available at https:/
             this.value = this._formatISO(selectedDate);
             this._focusedDate = selectedDate;
             this._inputValue = selectedDate ? formatDate(selectedDate) : '';
+        }
+
+        _accuracyChanged(accuracy){
+            if(accuracy && accuracy!==this.accuracy) this.accuracy=accuracy
         }
 
         _focusedDateChanged(focusedDate, formatDate) {
@@ -458,7 +471,8 @@ This program is available under Apache License Version 2.0, available at https:/
         }
 
         _valueChanged(value, oldValue) {
-            this._handleDateChange('_selectedDate', value, oldValue);
+            let parts = value ? value.split("-") : []
+            this._handleDateChange('_selectedDate',parts.length ? parts[0]+"-"+(parts[1]==="00" ? "01" : parts[1])+"-"+(parts[2]==="00" ? "01" : parts[2]) : value, oldValue);
         }
 
         _minChanged(value, oldValue) {
@@ -591,10 +605,10 @@ This program is available under Apache License Version 2.0, available at https:/
                 var parsedDate = this.i18n.parseDate(inputValue);
                 if (this._isValidDate(parsedDate.date)) {
                     this._selectedDate = parsedDate.date;
-                    this.accuracy = parsedDate.accuracy;
+                    this._accuracy = parsedDate.accuracy;
                 } else {
                     this._selectedDate = null;
-                    this.accuracy = '';
+                    this._accuracy = '';
                     this._inputValue = inputValue;
                 }
             } else if (this._focusedDate) {
@@ -787,6 +801,7 @@ This program is available under Apache License Version 2.0, available at https:/
                     this._focusedDate = parsedDate.date;
                     this._ignoreFocusedDateChange = false;
                     this.accuracy = parsedDate.accuracy;
+                    this._accuracy = parsedDate.accuracy;
                 }
             }
         }

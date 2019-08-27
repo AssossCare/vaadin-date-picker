@@ -56,8 +56,8 @@ This program is available under Apache License Version 2.0, available at https:/
     </style>
 
     <div part="month-header" role="heading">
-      <span part="month-part-header" selected$="[[_isMonthSelected(month, selectedDate, selectedLevel)]]" on-tap="_monthTap" month="[[month]]">[[_getTitle(month, i18n.monthNames)]]</span>
-      <span part="year-part-header" selected$="[[_isYearSelected(month, selectedDate, selectedLevel)]]" on-tap="_yearTap" month="[[month]]">[[_getYear(month)]]</span>
+      <span part="month-part-header" selected$="[[_isMonthSelected(month, selectedDate, accuracy)]]" focused$="[[_isMonthSelected(month, focusedDate, accuracy)]]" on-tap="_monthTap" month="[[month]]">[[_getTitle(month, i18n.monthNames)]] </span>
+      <span part="year-part-header" selected$="[[_isYearSelected(month, selectedDate, accuracy)]]" focused$="[[_isYearSelected(month, focusedDate, accuracy)]]" on-tap="_yearTap" month="[[month]]"> [[_getYear(month)]]</span>
     </div><!-- ToDo julien wathelet ajouter le on-tap pour prendre la valeur mois-->
     <div id="monthGrid" on-tap="_handleTap" on-touchend="_preventDefault" on-touchstart="_onMonthGridTouchStart">
       <div id="weekdays-container">
@@ -79,8 +79,8 @@ This program is available under Apache License Version 2.0, available at https:/
             <div
                     part="date"
                     today$="[[_isToday(item)]]"
-                    selected$="[[_isDateSelected(item, selectedDate, selectedLevel)]]"
-                    focused$="[[_dateEquals(item, focusedDate)]]"
+                    selected$="[[_isDateSelected(item, selectedDate,accuracy)]]"
+                    focused$="[[_isFocused(item, focusedDate,accuracy)]]"
                     date="[[item]]"
                     disabled$="[[!_dateAllowed(item, minDate, maxDate)]]"
                     role$="[[_getRole(item)]]"
@@ -170,11 +170,12 @@ This program is available under Apache License Version 2.0, available at https:/
             },
 
             /**
-             * @JulienWathelet can selected a date in different level (day, month, year)
+             * @JulienWathelet can selected a date with a different accuracy (day, month, year)
              */
-            selectedLevel:{
+            accuracy:{
               type: String,
-              value:"day"
+              value:"",
+              notify: true
             }
           };
         }
@@ -185,16 +186,20 @@ This program is available under Apache License Version 2.0, available at https:/
           ];
         }
 
-        _isDateSelected(date1,date2){
-          return this.selectedLevel==="day" && this._dateEquals(date1,date2)
+        _isFocused(date1,date2,accuracy){
+          return accuracy==="day" && this._dateEquals(date1,date2)
         }
 
-        _isMonthSelected(month,date){
-          return this.selectedLevel==="month" && date && date.getMonth()==month.getMonth()
+        _isDateSelected(date1,date2,accuracy){
+          return accuracy==="day" && this._dateEquals(date1,date2)
         }
 
-        _isYearSelected(month,date){
-          return this.selectedLevel==="year" && date && date.getFullYear()==month.getFullYear()
+        _isMonthSelected(month,date,accuracy){
+          return accuracy==="month" && !!date && date.getMonth()==month.getMonth()
+        }
+
+        _isYearSelected(month,date,accuracy){
+          return accuracy==="year" && !!date && date.getFullYear()==month.getFullYear()
         }
 
         _dateEquals(date1, date2) {
@@ -225,16 +230,9 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _getTitle(month, monthNames) {
           if (month === undefined || monthNames === undefined) {
-            return "";
+            return;
           }
           return this.i18n.formatTitle(monthNames[month.getMonth()], month.getFullYear());
-        }
-
-        _getYear(month) {
-          if (month === undefined) {
-            return "";
-          }
-          return month.getFullYear();
         }
 
         _onMonthGridTouchStart() {
@@ -292,6 +290,10 @@ This program is available under Apache License Version 2.0, available at https:/
           return this._dateEquals(new Date(), date);
         }
 
+        _getYear(month){
+          return month.getFullYear();
+        }
+
         _getDays(month, firstDayOfWeek) {
           if (month === undefined || firstDayOfWeek === undefined) {
             return;
@@ -342,7 +344,7 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _handleTap(e) {
           if (!this.ignoreTaps && !this._notTapping && e.target.date && !e.target.hasAttribute('disabled')) {
-            this.selectedLevel="day"
+            this.accuracy="day"
             this.selectedDate = e.target.date;
             this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
           }
@@ -350,7 +352,7 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _monthTap(e) {
           if (!this.ignoreTaps && !this._notTapping && e.target.month && !e.target.hasAttribute('disabled')) {
-            this.selectedLevel="month"
+            this.accuracy="month"
             this.selectedDate = e.target.month;
             this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
           }
@@ -358,7 +360,7 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _yearTap(e) {
           if (!this.ignoreTaps && !this._notTapping && e.target.month && !e.target.hasAttribute('disabled')) {
-            this.selectedLevel="year"
+            this.accuracy="year"
             this.selectedDate = e.target.month;
             this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
           }
