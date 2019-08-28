@@ -4,8 +4,8 @@ Copyright (c) 2017 Vaadin Ltd.
 This program is available under Apache License Version 2.0, available at https://vaadin.com/license/
 -->
 
-<link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
-<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="vaadin-date-picker-helper.html">
 
 <script>
@@ -15,7 +15,7 @@ This program is available under Apache License Version 2.0, available at https:/
      * @polymerMixin
      */
     Vaadin.DatePickerMixin = subclass => class VaadinDatePickerMixin extends Polymer.mixinBehaviors(
-        [Polymer.IronA11yKeysBehavior, Polymer.IronResizableBehavior], subclass
+        [Polymer.IronResizableBehavior], subclass
     ) {
 
         static get properties() {
@@ -77,16 +77,6 @@ This program is available under Apache License Version 2.0, available at https:/
                 },
 
                 /**
-                 * Indicates whether this date picker has a value.
-                 * @private
-                 */
-                hasValue: {
-                    type: Boolean,
-                    computed: '_hasValue(value)',
-                    reflectToAttribute: true
-                },
-
-                /**
                  * Date which should be visible when there is no value selected.
                  *
                  * The same date formats as for the `value` property are supported.
@@ -104,7 +94,8 @@ This program is available under Apache License Version 2.0, available at https:/
                 opened: {
                     type: Boolean,
                     reflectToAttribute: true,
-                    notify: true
+                    notify: true,
+                    observer: '_openedChanged'
                 },
 
                 /**
@@ -178,21 +169,21 @@ This program is available under Apache License Version 2.0, available at https:/
               // Translation of the Cancel button text.
               cancel: 'Cancel',
 
-              // A function to format given `Date` object as
-              // date string.
+              // A function to format given `Object` as
+              // date string. Object is in the format `{ day: ..., month: ..., year: ... }`
+              // Note: The argument month is 0-based. This means that January = 0 and December = 11.
               formatDate: d => {
                 // returns a string representation of the given
-                // Date object in 'MM/DD/YYYY' -format
+                // object in 'MM/DD/YYYY' -format
               },
 
-              // A function to parse the given text to a `Date`
-              // object. Must properly parse (at least) text
-              // formatted by `formatDate`.
-              // Setting the property to null will disable
-              // keyboard input feature.
+              // A function to parse the given text to an `Object` in the format `{ day: ..., month: ..., year: ... }`.
+              // Must properly parse (at least) text formatted by `formatDate`.
+              // Setting the property to null will disable keyboard input feature.
+              // Note: The argument month is 0-based. This means that January = 0 and December = 11.
               parseDate: text => {
                 // Parses a string in 'MM/DD/YY', 'MM/DD' or 'DD' -format to
-                // a Date object
+                // an `Object` in the format `{ day: ..., month: ..., year: ... }`.
               }
 
               // A function to format given `monthName` and
@@ -221,15 +212,17 @@ This program is available under Apache License Version 2.0, available at https:/
                             clear: 'Clear',
                             today: 'Today',
                             cancel: 'Cancel',
-                            formatDate: d => {
-                                let yearStr = String(d.getFullYear());
-                                yearStr = yearStr.replace(/\d+/, y => '0000'.substr(y.length) + y);
-                                return [d.getDate(),d.getMonth() + 1, yearStr].join('/');
+                            formatDate: (d, accuracy) => {
+                                const yearStr = String(d.year).replace(/\d+/, y => '0000'.substr(y.length) + y);
+                                var array = [yearStr];
+                                accuracy!=="year" ? array.unshift(d.month+1) : ""
+                                accuracy==="day" ? array.unshift(d.day) : ""
+                                return array.join('/');
                             },
                             parseDate: text => {
                                 const parts = text.split('/');
                                 const today = new Date();
-                                let date, month = today.getMonth(), year = today.getFullYear(), accuracy="";
+                                let day, month = today.getMonth(), year = today.getFullYear(),accuracy="";
 
                                 parts.reverse()
                                 if (parts.length >= 1) {
@@ -246,21 +239,14 @@ This program is available under Apache License Version 2.0, available at https:/
                                     month= 0;
                                 }
                                 if (parts.length >= 3 && parseInt(parts[2])>0) {
-                                    date = parseInt(parts[2]);
+                                    day = parseInt(parts[2]);
                                     accuracy="day";
                                 }else{
-                                    date = 1;
+                                    day = 1;
                                 }
 
-                                if (date !== undefined) {
-                                    const result = new Date(0, 0); // Wrong date (1900-01-01), but with midnight in local time
-                                    result.setFullYear(year);
-                                    result.setMonth(month);
-                                    result.setDate(date);
-                                    return {
-                                        date : result,
-                                        accuracy : accuracy
-                                    };
+                                if (day !== undefined) {
+                                    return {day, month, year, accuracy};
                                 }
                             },
                             formatTitle: (monthName, fullYear) => {
@@ -317,12 +303,17 @@ This program is available under Apache License Version 2.0, available at https:/
 
                 _noInput: {
                     type: Boolean,
-                    computed: '_isNoInput(_fullscreen, i18n, i18n.*, _ios)'
+                    computed: '_isNoInput(_fullscreen, _ios, i18n, i18n.*)'
                 },
 
                 _ios: {
                     type: Boolean,
                     value: navigator.userAgent.match(/iP(?:hone|ad;(?: U;)? CPU) OS (\d+)/)
+                },
+
+                _webkitOverflowScroll: {
+                    type: Boolean,
+                    value: document.createElement('div').style.webkitOverflowScrolling === ''
                 },
 
                 _ignoreAnnounce: {
@@ -331,18 +322,13 @@ This program is available under Apache License Version 2.0, available at https:/
 
                 _focusOverlayOnOpen: Boolean,
 
-                /**
-                 * When datepicker is opened, we're setting body pointer-events to none
-                 * to make the datepicker behave in "modal" way. This variable keeps the
-                 * previous state of body pointer-events to restore it when datepicker is
-                 * closed.
-                 */
-                _documentPointerEvents: String
+                _overlayInitialized: Boolean
             };
         }
 
         static get observers() {
             return [
+                '_updateHasValue(value)',
                 '_validateInput(_selectedDate, _minDate, _maxDate)',
                 '_selectedDateChanged(_selectedDate, i18n.formatDate)',
                 '_focusedDateChanged(_focusedDate, i18n.formatDate)',
@@ -354,13 +340,57 @@ This program is available under Apache License Version 2.0, available at https:/
         ready() {
             super.ready();
             this._boundOnScroll = this._onScroll.bind(this);
-            this.addEventListener('tap', this.open.bind(this));
+            this._boundFocus = this._focus.bind(this);
+            this._boundUpdateAlignmentAndPosition = this._updateAlignmentAndPosition.bind(this);
+
+            Polymer.Gestures.addListener(this, 'tap', e => {
+                // FIXME(platosha): use preventDefault in the text field clear button,
+                // then the following composedPath check could be simplified down
+                // to `if (!e.defaultPrevented)`.
+                // https://github.com/vaadin/vaadin-text-field/issues/352
+                const inputIndex = e.composedPath().indexOf(this._inputElement);
+                if (
+                    e.composedPath().slice(0, inputIndex)
+                        .filter(el => el.getAttribute && el.getAttribute('part') === 'clear-button')
+                        .length === 0
+                ) {
+                    this.open();
+                }
+            });
+
             this.addEventListener('touchend', this._preventDefault.bind(this));
             this.addEventListener('keydown', this._onKeydown.bind(this));
-            this.addEventListener('close', this._close.bind(this));
-            this.addEventListener('date-tap', this._close.bind(this));
-            this.addEventListener('focus-input', this._focusAndSelect.bind(this));
             this.addEventListener('input', this._onUserInput.bind(this));
+            this.addEventListener('focus', e => this._noInput && e.target.blur());
+        }
+
+        _initOverlay() {
+            this.$.overlay.removeAttribute('disable-upgrade');
+            this._overlayInitialized = true;
+
+            this.$.overlay.addEventListener('opened-changed', e => this.opened = e.detail.value);
+
+            this._overlayContent.addEventListener('close', this._close.bind(this));
+            this._overlayContent.addEventListener('focus-input', this._focusAndSelect.bind(this));
+            this.$.overlay.addEventListener('vaadin-overlay-escape-press', this._boundFocus);
+
+            // Keep focus attribute in focusElement for styling
+            this._overlayContent.addEventListener('focus', () => this.focusElement._setFocused(true));
+
+            this.$.overlay.addEventListener('vaadin-overlay-close', this._onVaadinOverlayClose.bind(this));
+        }
+
+        /**
+         * @protected
+         */
+        disconnectedCallback() {
+            super.disconnectedCallback();
+
+            if (this._overlayInitialized) {
+                this.$.overlay.removeEventListener('vaadin-overlay-escape-press', this._boundFocus);
+            }
+
+            this.opened = false;
         }
 
         /**
@@ -368,8 +398,7 @@ This program is available under Apache License Version 2.0, available at https:/
          */
         open() {
             if (!this.disabled && !this.readonly) {
-                this.$.dropdown.open();
-                this._updateAlignmentAndPosition();
+                this.opened = true;
             }
         }
 
@@ -385,7 +414,9 @@ This program is available under Apache License Version 2.0, available at https:/
          * Closes the dropdown.
          */
         close() {
-            this.$.dropdown.close();
+            if (this._overlayInitialized) {
+                this.$.overlay.close();
+            }
         }
 
         get _inputElement() {
@@ -404,7 +435,7 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _parseDate(str) {
             // Parsing with RegExp to ensure correct format
-            var parts = /^(\d{4}|[-+]\d{6})-(\d{2})-(\d{2})$/.exec(str);
+            var parts = /^([-+]\d{1}|\d{2,4}|[-+]\d{6})-(\d{1,2})-(\d{1,2})$/.exec(str);
             if (!parts) {
                 return;
             }
@@ -416,25 +447,64 @@ This program is available under Apache License Version 2.0, available at https:/
             return date;
         }
 
-        _isNoInput() {
-            return !this._inputElement || this._fullscreen || !this.i18n.parseDate || this._ios;
+        _isNoInput(fullscreen, ios, i18n) {
+            return !this._inputElement || fullscreen || ios || !i18n.parseDate;
         }
 
         _formatISO(date) {
-            return date instanceof Date ?
-                this.accuracy==="year" ? date.getFullYear()+"-00-00" :
-                    this.accuracy==="month" ? date.getFullYear()+"-"+(date.getMonth()>8 ? (date.getMonth()+1) : "0"+(date.getMonth()+1))+"-00" :
-                        this.accuracy==="day" ? date.getFullYear()+"-"+(date.getMonth()>8 ? (date.getMonth()+1) : "0"+(date.getMonth()+1))+"-"+(date.getDate()<10 ? "0"+date.getDate() : date.getDate()) : ""
-                : '';
+            if (!(date instanceof Date)) {
+                return '';
+            }
+
+            const pad = (num, fmt = '00') => (fmt + num).substr((fmt + num).length - fmt.length);
+
+            let yearSign = '';
+            let yearFmt = '0000';
+            let yearAbs = date.getFullYear();
+            if (yearAbs < 0) {
+                yearAbs = -yearAbs;
+                yearSign = '-';
+                yearFmt = '000000';
+            } else if (date.getFullYear() >= 10000) {
+                yearSign = '+';
+                yearFmt = '000000';
+            }
+
+            const year = yearSign + pad(yearAbs, yearFmt);
+            const month = this.accuracy==="year" ? "00" : pad(date.getMonth() + 1);
+            const day = this.accuracy==="year" || this.accuracy==="month" ? "00" : pad(date.getDate());
+            return [year, month, day].join('-');
+        }
+
+        _openedChanged(opened) {
+            if (opened && !this._overlayInitialized) {
+                this._initOverlay();
+            }
+            if (this._overlayInitialized) {
+                this.$.overlay.opened = opened;
+            }
+            if (opened) {
+                this._updateAlignmentAndPosition();
+            }
         }
 
         _selectedDateChanged(selectedDate, formatDate) {
             if (selectedDate === undefined || formatDate === undefined) {
                 return;
             }
-            this.value = this._formatISO(selectedDate);
+            if (this.__userInputOccurred) {
+                this.__dispatchChange = true;
+            }
+            const inputValue = selectedDate && formatDate(Vaadin.DatePickerHelper._extractDateParts(selectedDate),this.accuracy);
+            const value = this._formatISO(selectedDate);
+            if (value !== this.value) {
+                this.validate(inputValue);
+                this.value = value;
+            }
+            this.__userInputOccurred = false;
+            this.__dispatchChange = false;
             this._focusedDate = selectedDate;
-            this._inputValue = selectedDate ? formatDate(selectedDate) : '';
+            this._inputValue = selectedDate ? inputValue : '';
         }
 
         _accuracyChanged(accuracy){
@@ -445,13 +515,25 @@ This program is available under Apache License Version 2.0, available at https:/
             if (focusedDate === undefined || formatDate === undefined) {
                 return;
             }
+            this.__userInputOccurred = true;
             if (!this._ignoreFocusedDateChange && !this._noInput) {
-                this._inputValue = focusedDate ? formatDate(focusedDate) : '';
+                this._inputValue = focusedDate ? formatDate(Vaadin.DatePickerHelper._extractDateParts(focusedDate),this.accuracy) : '';
             }
         }
 
-        _hasValue(value) {
-            return !!value;
+        _updateHasValue(value) {
+            if (value) {
+                this.setAttribute('has-value', '');
+            } else {
+                this.removeAttribute('has-value');
+            }
+        }
+
+
+        __getOverlayTheme(theme, overlayInitialized) {
+            if (overlayInitialized) {
+                return theme;
+            }
         }
 
         _handleDateChange(property, value, oldValue) {
@@ -471,6 +553,9 @@ This program is available under Apache License Version 2.0, available at https:/
         }
 
         _valueChanged(value, oldValue) {
+            if (this.__dispatchChange) {
+                this.dispatchEvent(new CustomEvent('change', {bubbles: true}));
+            }
             let parts = value ? value.split("-") : []
             this._handleDateChange('_selectedDate',parts.length ? parts[0]+"-"+(parts[1]==="00" ? "01" : parts[1])+"-"+(parts[2]==="00" ? "01" : parts[2]) : value, oldValue);
         }
@@ -484,81 +569,91 @@ This program is available under Apache License Version 2.0, available at https:/
         }
 
         _updateAlignmentAndPosition() {
-            var viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-            this.$.dropdown.positionTarget = this._fullscreen ? document.documentElement : this;
+            if (!this._overlayInitialized) {
+                return;
+            }
+            if (!this._fullscreen) {
+                const inputRect = this._inputElement.getBoundingClientRect();
 
-            var viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-            var bottomAlign = this.getBoundingClientRect().top > viewportHeight / 2;
-            var rightAlign = this.getBoundingClientRect().left + this.clientWidth / 2 > viewportWidth / 2;
+                const bottomAlign = inputRect.top > window.innerHeight / 2;
+                const rightAlign = inputRect.left + this.clientWidth / 2 > window.innerWidth / 2;
 
-            this.$.dropdown.verticalAlign = bottomAlign ? 'bottom' : 'top';
-            this.$.dropdown.horizontalAlign = this._fullscreen ? null : rightAlign ? 'right' : 'left';
+                if (rightAlign) {
+                    const viewportWidth = Math.min(window.innerWidth, document.documentElement.clientWidth);
+                    this.$.overlay.setAttribute('right-aligned', '');
+                    this.$.overlay.style.removeProperty('left');
+                    this.$.overlay.style.right = (viewportWidth - inputRect.right) + 'px';
+                } else {
+                    this.$.overlay.removeAttribute('right-aligned');
+                    this.$.overlay.style.removeProperty('right');
+                    this.$.overlay.style.left = inputRect.left + 'px';
+                }
 
-            // Previously used verticalOffset property has been recently deprecated
-            // in favor of using top and bottom margins.
-            if (this._fullscreen) {
-                this.$.dropdown.style.marginTop = 0;
-                this.$.dropdown.style.marginBottom = 0;
-            } else {
-                this.$.dropdown.style.marginTop = (bottomAlign ? 10 : this.clientHeight + 2) + 'px';
-                this.$.dropdown.style.marginBottom = (bottomAlign ? this.clientHeight : 10) + 'px';
+                if (bottomAlign) {
+                    const viewportHeight = Math.min(window.innerHeight, document.documentElement.clientHeight);
+                    this.$.overlay.setAttribute('bottom-aligned', '');
+                    this.$.overlay.style.removeProperty('top');
+                    this.$.overlay.style.bottom = (viewportHeight - inputRect.top) + 'px';
+                } else {
+                    this.$.overlay.removeAttribute('bottom-aligned');
+                    this.$.overlay.style.removeProperty('bottom');
+                    this.$.overlay.style.top = inputRect.bottom + 'px';
+                }
             }
 
-            this.$.overlay._repositionYearScroller();
+            this.$.overlay.setAttribute('dir',
+                getComputedStyle(this._inputElement).getPropertyValue('direction')
+            );
+            this._overlayContent._repositionYearScroller();
         }
 
         _fullscreenChanged() {
-            if (this.$.dropdown.opened) {
+            if (this._overlayInitialized && this.$.overlay.opened) {
                 this._updateAlignmentAndPosition();
             }
         }
 
         _onOverlayOpened() {
+            this._openedWithFocusRing = this.hasAttribute('focus-ring') || (this.focusElement && this.focusElement.hasAttribute('focus-ring'));
+
             var parsedInitialPosition = this._parseDate(this.initialPosition);
 
-            var initialPosition = this._selectedDate || this.$.overlay.initialPosition ||
+            var initialPosition = this._selectedDate || this._overlayContent.initialPosition ||
                 parsedInitialPosition || new Date();
 
             if (parsedInitialPosition ||
                 Vaadin.DatePickerHelper._dateAllowed(initialPosition, this._minDate, this._maxDate)) {
-                this.$.overlay.initialPosition = initialPosition;
+                this._overlayContent.initialPosition = initialPosition;
             } else {
-                this.$.overlay.initialPosition =
+                this._overlayContent.initialPosition =
                     Vaadin.DatePickerHelper._getClosestDate(initialPosition, [this._minDate, this._maxDate]);
             }
 
-            this.$.overlay.scrollToDate(this.$.overlay.focusedDate || this.$.overlay.initialPosition);
+            this._overlayContent.scrollToDate(this._overlayContent.focusedDate || this._overlayContent.initialPosition);
             // Have a default focused date
             this._ignoreFocusedDateChange = true;
-            this.$.overlay.focusedDate = this.$.overlay.focusedDate || this.$.overlay.initialPosition;
+            this._overlayContent.focusedDate = this._overlayContent.focusedDate || this._overlayContent.initialPosition;
             this._ignoreFocusedDateChange = false;
 
             window.addEventListener('scroll', this._boundOnScroll, true);
-            this.listen(this, 'iron-resize', '_updateAlignmentAndPosition');
+            this.addEventListener('iron-resize', this._boundUpdateAlignmentAndPosition);
 
-            // Checking if the browser supports webkitOverflowScrolling
-            if (document.createElement('div').style.webkitOverflowScrolling === '') {
+            if (this._webkitOverflowScroll) {
                 this._touchPrevented = this._preventWebkitOverflowScrollingTouch(this.parentElement);
             }
 
             if (this._focusOverlayOnOpen) {
-                this.$.overlay.focus();
+                this._overlayContent.focus();
                 this._focusOverlayOnOpen = false;
             } else {
                 this._focus();
             }
 
+            if (this._noInput && this.focusElement) {
+                this.focusElement.blur();
+            }
+
             this.updateStyles();
-
-            // Set body pointer-events to 'none' to disable mouse interactions with
-            // other document nodes (datepicker is "modal")
-            this._documentPointerEvents = document.body.style.pointerEvents;
-            document.body.style.pointerEvents = 'none';
-
-            // Workarond for Chrome 62+, without it clicks on date cells don't work
-            var _pointerEvents = this.style.pointerEvents;
-            this.style.pointerEvents = 'auto';
-            this.style.pointerEvents = _pointerEvents;
 
             this._ignoreAnnounce = false;
         }
@@ -585,7 +680,7 @@ This program is available under Apache License Version 2.0, available at https:/
             this._ignoreAnnounce = true;
 
             window.removeEventListener('scroll', this._boundOnScroll, true);
-            this.unlisten(this, 'iron-resize', '_updateAlignmentAndPosition');
+            this.removeEventListener('iron-resize', this._boundUpdateAlignmentAndPosition);
 
             if (this._touchPrevented) {
                 this._touchPrevented.forEach(prevented =>
@@ -595,20 +690,20 @@ This program is available under Apache License Version 2.0, available at https:/
 
             this.updateStyles();
 
-            // Restore the initial body pointer-events
-            document.body.style.pointerEvents = this._documentPointerEvents;
-
             // Select the parsed input or focused date
             this._ignoreFocusedDateChange = true;
             if (this.i18n.parseDate) {
                 var inputValue = this._inputValue || '';
-                var parsedDate = this.i18n.parseDate(inputValue);
-                if (this._isValidDate(parsedDate.date)) {
-                    this._selectedDate = parsedDate.date;
-                    this._accuracy = parsedDate.accuracy;
+                const dateObject = this.i18n.parseDate(inputValue);
+                const parsedDate = dateObject &&
+                    this._parseDate(`${dateObject.year}-${dateObject.month + 1}-${dateObject.day}`);
+
+                if (this._isValidDate(parsedDate)) {
+                    this._selectedDate = parsedDate;
+                    this._accuracy = dateObject.accuracy;
                 } else {
                     this._selectedDate = null;
-                    this._accuracy = '';
+                    this._accuracy=""
                     this._inputValue = inputValue;
                 }
             } else if (this._focusedDate) {
@@ -619,21 +714,18 @@ This program is available under Apache License Version 2.0, available at https:/
             if (this._nativeInput && this._nativeInput.selectionStart) {
                 this._nativeInput.selectionStart = this._nativeInput.selectionEnd;
             }
-
             this.validate();
         }
 
-        detached() {
-            this._onOverlayClosed();
-        }
-
         /**
-         * Returns true if `value` is valid, and sets the `invalid` flag appropriatelly.
+         * Returns true if `value` is valid, and sets the `invalid` flag appropriately.
          *
          * @param {string} value Value to validate. Optional, defaults to user's input value.
-         * @return {boolean} True if the value is valid and sets the `invalid` flag appropriatelly
+         * @return {boolean} True if the value is valid and sets the `invalid` flag appropriately
          */
         validate(value) {
+            // reset invalid state on the underlying text field
+            this.invalid = false;
             value = value !== undefined ? value : this._inputValue;
             return !(this.invalid = !this.checkValidity(value));
         }
@@ -647,7 +739,8 @@ This program is available under Apache License Version 2.0, available at https:/
          * @return {boolean} True if the value is valid
          */
         checkValidity(value) {
-            var inputValid = !value || (this._selectedDate && value === this.i18n.formatDate(this._selectedDate));
+            var inputValid = !value ||
+                (this._selectedDate && value === this.i18n.formatDate(Vaadin.DatePickerHelper._extractDateParts(this._selectedDate)));
             var minMaxValid = !this._selectedDate ||
                 Vaadin.DatePickerHelper._dateAllowed(this._selectedDate, this._minDate, this._maxDate);
 
@@ -666,21 +759,14 @@ This program is available under Apache License Version 2.0, available at https:/
         }
 
         _onScroll(e) {
-            if (e.target === window || !this.$.overlay.contains(e.target)) {
+            if (e.target === window || !this._overlayContent.contains(e.target)) {
                 this._updateAlignmentAndPosition();
-            }
-        }
-
-        _preventCancelOnComponentAccess(e) {
-            var event = e.detail;
-            if (/tap|mousedown|touchstart/.test(e.detail.type) && event.composedPath().indexOf(this) > -1) {
-                e.preventDefault();
             }
         }
 
         _focus() {
             if (this._noInput) {
-                this.$.overlay.focus();
+                this._overlayInitialized && this._overlayContent.focus();
             } else {
                 this._inputElement.focus();
             }
@@ -739,20 +825,25 @@ This program is available under Apache License Version 2.0, available at https:/
                     e.preventDefault();
 
                     if (this.opened) {
-                        this.$.overlay.focus();
-                        this.$.overlay._onKeydown(e);
+                        this._overlayContent.focus();
+                        this._overlayContent._onKeydown(e);
                     } else {
                         this._focusOverlayOnOpen = true;
                         this.open();
                     }
 
                     break;
-                case 'enter':
-                    if (this.$.overlay.focusedDate) {
-                        this._selectedDate = this.$.overlay.focusedDate;
+                case 'enter': {
+                    const dateObject = this.i18n.parseDate(this._inputValue);
+                    const parsedDate = dateObject &&
+                        this._parseDate(dateObject.year + '-' + (dateObject.month + 1) + '-' + dateObject.day);
+
+                    if (this._overlayInitialized && this._overlayContent.focusedDate && this._isValidDate(parsedDate)) {
+                        this._selectedDate = this._overlayContent.focusedDate;
                     }
                     this.close();
                     break;
+                }
                 case 'esc':
                     this._focusedDate = this._selectedDate;
                     this._close();
@@ -763,10 +854,10 @@ This program is available under Apache License Version 2.0, available at https:/
                         // Clear the selection range (remains visible on IE)
                         this._setSelectionRange(0, 0);
                         if (e.shiftKey) {
-                            this.$.overlay.focusCancel();
+                            this._overlayContent.focusCancel();
                         } else {
-                            this.$.overlay.focus();
-                            this.$.overlay.revealDate(this._focusedDate);
+                            this._overlayContent.focus();
+                            this._overlayContent.revealDate(this._focusedDate);
                         }
 
                     }
@@ -781,36 +872,44 @@ This program is available under Apache License Version 2.0, available at https:/
         }
 
         _onUserInput(e) {
-            this._userInputValueChanged();
-
-            if (!this.opened) {
+            if (!this.opened && this._inputElement.value) {
                 this.open();
-                if (this._ios) {
-                    // iOS needs a refit after input blur animation has finished
-                    this._debouncerRefit = Polymer.Debouncer.debounce(this._debouncerRefit,
-                        Polymer.Async.timeOut.after(500), this.$.dropdown.refit);
-                }
             }
+            this._userInputValueChanged();
         }
 
         _userInputValueChanged(value) {
             if (this.opened && this._inputValue) {
-                var parsedDate = this.i18n.parseDate && this.i18n.parseDate(this._inputValue);
-                if (this._isValidDate(parsedDate.date)) {
+                const dateObject = this.i18n.parseDate && this.i18n.parseDate(this._inputValue);
+                const parsedDate = dateObject &&
+                    this._parseDate(`${dateObject.year}-${dateObject.month + 1}-${dateObject.day}`);
+
+                if (this._isValidDate(parsedDate)) {
                     this._ignoreFocusedDateChange = true;
-                    this._focusedDate = parsedDate.date;
+                    this.accuracy = dateObject.accuracy;
+                    this._accuracy = dateObject.accuracy;
+                    if (!Vaadin.DatePickerHelper._dateEquals(parsedDate, this._focusedDate)) {
+                        this._focusedDate = parsedDate;
+                    }
                     this._ignoreFocusedDateChange = false;
-                    this.accuracy = parsedDate.accuracy;
-                    this._accuracy = parsedDate.accuracy;
                 }
             }
         }
 
         _announceFocusedDate(_focusedDate, opened, _ignoreAnnounce) {
             if (opened && !_ignoreAnnounce) {
-                this.$.overlay.announceFocusedDate();
+                this._overlayContent.announceFocusedDate();
             }
         }
-    };
 
+        get _overlayContent() {
+            return this.$.overlay.content.querySelector('#overlay-content');
+        }
+
+        /**
+         * Fired when the user commits a value change.
+         *
+         * @event change
+         */
+    };
 </script>
