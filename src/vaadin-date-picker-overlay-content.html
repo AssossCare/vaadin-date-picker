@@ -203,6 +203,12 @@ This program is available under Apache License Version 2.0, available at https:/
       <vaadin-button id="todayButton" part="today-button" disabled="[[!_isTodayAllowed(minDate, maxDate)]]" on-tap="_onTodayTap">
         [[i18n.today]]
       </vaadin-button>
+      <vaadin-button id="thisMonthButton" part="this-month-button" disabled="[[!_isThisMonthAllowed(minDate, maxDate)]]" on-tap="_onThisMonthTap">
+        [[i18n.thisMonth]]
+      </vaadin-button>
+      <vaadin-button id="thisYearButton" part="this-year-button" disabled="[[!_isThisYearAllowed(minDate, maxDate)]]" on-tap="_onThisYearTap">
+        [[i18n.thisYear]]
+      </vaadin-button>
       <vaadin-button id="cancelButton" part="cancel-button" on-tap="_cancel">
         [[i18n.cancel]]
       </vaadin-button>
@@ -479,6 +485,37 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _onThisMonthTap() {
           var today = new Date();
+          today.setDate(1)
+
+          if (Math.abs(this.$.monthScroller.position - this._differenceInMonths(today, this._originDate)) < 0.001) {
+            // Select today only if the month scroller is positioned approximately
+            // at the beginning of the current month
+            this.accuracy = "month"
+            this.selectedDate = today;
+            this._close();
+          } else {
+            this._scrollToCurrentMonth();
+          }
+        }
+
+        _onThisYearTap() {
+          var today = new Date();
+          today.setDate(1)
+          today.setMonth(0)
+
+          if (Math.abs(this.$.monthScroller.position - this._differenceInMonths(today, this._originDate)) < 0.001) {
+            // Select today only if the month scroller is positioned approximately
+            // at the beginning of the current month
+            this.accuracy = "year"
+            this.selectedDate = today;
+            this._close();
+          } else {
+            this._scrollToCurrentMonth();
+          }
+        }
+
+        _onThisMonthTap() {
+          var today = new Date();
           if (this.$.monthScroller.position === this._differenceInMonths(today, this._originDate)) {
             // Select today only if the month scroller is positioned exactly
             // at the beginning of the current month
@@ -732,6 +769,8 @@ This program is available under Apache License Version 2.0, available at https:/
           // Cannot use (today/cancel).focused flag because vaadin-text-field removes it
           // previously in the keydown event.
           const isToday = e.composedPath().indexOf(this.$.todayButton) >= 0;
+          const isThisMonth = e.composedPath().indexOf(this.$.thisMonthButton) >= 0;
+          const isThisYear = e.composedPath().indexOf(this.$.thisYearButton) >= 0;
           const isCancel = e.composedPath().indexOf(this.$.cancelButton) >= 0;
           const isScroller = !isToday && !isCancel;
 
@@ -786,6 +825,10 @@ This program is available under Apache License Version 2.0, available at https:/
                   this._close();
                 } else if (isToday) {
                   this._onTodayTap();
+                } else if (isThisMonth) {
+                  this._onThisMonthTap();
+                } else if (isThisYear) {
+                  this._onThisYearTap();
                 }
                 break;
               case 'space':
@@ -793,6 +836,10 @@ This program is available under Apache License Version 2.0, available at https:/
                   this._close();
                 } else if (isToday) {
                   this._onTodayTap();
+                } else if (isThisMonth) {
+                  this._onThisMonthTap();
+                } else if (isThisYear) {
+                  this._onThisYearTap();
                 } else {
                   var focusedDate = this.focusedDate;
                   if (Vaadin.DatePickerHelper._dateEquals(focusedDate, this.selectedDate)) {
@@ -925,6 +972,34 @@ This program is available under Apache License Version 2.0, available at https:/
           todayMidnight.setMonth(today.getMonth());
           todayMidnight.setDate(today.getDate());
           return this._dateAllowed(todayMidnight, min, max);
+        }
+
+        _isThisMonthAllowed(min, max) {
+          var today = new Date();
+          var firstDay = new Date(0, 0);
+          var lastDay= new Date(0, 0);
+          firstDay.setFullYear(today.getFullYear());
+          firstDay.setMonth(today.getMonth());
+          firstDay.setDate(1);
+          lastDay.setFullYear(today.getFullYear());
+          lastDay.setMonth(today.getMonth()+1);
+          lastDay.setDate(0);
+
+          return (!max || firstDay<=max) && (!min || lastDay>=min)
+        }
+
+        _isThisYearAllowed(min, max) {
+          var today = new Date();
+          var firstDay = new Date(0, 0);
+          var lastDay= new Date(0, 0);
+          firstDay.setFullYear(today.getFullYear());
+          firstDay.setMonth(0);
+          firstDay.setDate(1);
+          lastDay.setFullYear(today.getFullYear()+1);
+          lastDay.setMonth(0);
+          lastDay.setDate(0);
+
+          return (!max || firstDay<=max) && (!min || lastDay>=min)
         }
 
         _stopPropagation(e) {
