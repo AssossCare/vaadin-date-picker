@@ -204,7 +204,7 @@ This program is available under Apache License Version 2.0, available at https:/
       <vaadin-button id="todayButton" part="today-button" disabled="[[!_isTodayAllowed(minDate, maxDate)]]" on-tap="_onTodayTap">
         [[i18n.today]]
       </vaadin-button>
-      <template is="dom-if" if="[[!needFullDate]]">
+      <template is="dom-if" if="[[_showButtonsAccuracy(needFullDate)]]">
         <vaadin-button id="thisMonthButton" part="this-month-button" disabled="[[!_isThisMonthAllowed(minDate, maxDate)]]" on-tap="_onThisMonthTap">
           [[i18n.thisMonth]]
         </vaadin-button>
@@ -1015,6 +1015,10 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _stopPropagation(e) {
           e.stopPropagation();
+        }
+
+        _showButtonsAccuracy(){
+          return !this.needFullDate;
         }
       }
 
