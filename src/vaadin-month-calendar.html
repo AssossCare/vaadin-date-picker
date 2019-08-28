@@ -125,6 +125,14 @@ This program is available under Apache License Version 2.0, available at https:/
         static get properties() {
           return {
             /**
+             * Julien Wathelet,need date complete (accuracy activated or not)
+             */
+            needFullDate:{
+              type: Boolean,
+              notify: true
+            },
+
+            /**
              * A `Date` object defining the month to be displayed. Only year and
              * month properties are actually used.
              */
@@ -370,7 +378,7 @@ This program is available under Apache License Version 2.0, available at https:/
         }
 
         _monthTap(e) {
-          if (!this.ignoreTaps && !this._notTapping && e.target.month && !e.target.hasAttribute('disabled')) {
+          if(!this.needFullDate && !this.ignoreTaps && !this._notTapping && e.target.month && !e.target.hasAttribute('disabled')) {
             this.accuracy="month"
             this.selectedDate = e.target.month;
             this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
@@ -378,7 +386,7 @@ This program is available under Apache License Version 2.0, available at https:/
         }
 
         _yearTap(e) {
-          if (!this.ignoreTaps && !this._notTapping && e.target.month && !e.target.hasAttribute('disabled')) {
+          if(!this.needFullDate && !this.ignoreTaps && !this._notTapping && e.target.month && !e.target.hasAttribute('disabled')) {
             this.accuracy="year"
             this.selectedDate = e.target.month;
             this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));

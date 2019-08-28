@@ -62,6 +62,15 @@ This program is available under Apache License Version 2.0, available at https:/
                 },
 
                 /**
+                 * Julien Wathelet,need date complete (accuracy activated or not)
+                 */
+                needFullDate:{
+                    type: Boolean,
+                    notify: true,
+                    value: false
+                },
+
+                /**
                  * Set to true to mark the input as required.
                  */
                 required: {
@@ -888,8 +897,8 @@ This program is available under Apache License Version 2.0, available at https:/
 
                 if (this._isValidDate(parsedDate)) {
                     this._ignoreFocusedDateChange = true;
-                    this.accuracy = dateObject.accuracy;
-                    this._accuracy = dateObject.accuracy;
+                    this.accuracy = this.needFullDate ? "day" : dateObject.accuracy;
+                    this._accuracy = this.needFullDate ? "day" : dateObject.accuracy;
                     if (!Vaadin.DatePickerHelper._dateEquals(parsedDate, this._focusedDate)) {
                         this._focusedDate = parsedDate;
                     }

@@ -175,6 +175,7 @@ This program is available under Apache License Version 2.0, available at https:/
         <template>
           <vaadin-month-calendar
                   i18n="[[i18n]]"
+                  needFullDate="[[needFullDate]]"
                   month="[[_dateAfterXMonths(index)]]"
                   selected-date="{{selectedDate}}"
                   accuracy="{{accuracy}}"
@@ -203,12 +204,14 @@ This program is available under Apache License Version 2.0, available at https:/
       <vaadin-button id="todayButton" part="today-button" disabled="[[!_isTodayAllowed(minDate, maxDate)]]" on-tap="_onTodayTap">
         [[i18n.today]]
       </vaadin-button>
-      <vaadin-button id="thisMonthButton" part="this-month-button" disabled="[[!_isThisMonthAllowed(minDate, maxDate)]]" on-tap="_onThisMonthTap">
-        [[i18n.thisMonth]]
-      </vaadin-button>
-      <vaadin-button id="thisYearButton" part="this-year-button" disabled="[[!_isThisYearAllowed(minDate, maxDate)]]" on-tap="_onThisYearTap">
-        [[i18n.thisYear]]
-      </vaadin-button>
+      <template is="dom-if" if="[[!needFullDate]]">
+        <vaadin-button id="thisMonthButton" part="this-month-button" disabled="[[!_isThisMonthAllowed(minDate, maxDate)]]" on-tap="_onThisMonthTap">
+          [[i18n.thisMonth]]
+        </vaadin-button>
+        <vaadin-button id="thisYearButton" part="this-year-button" disabled="[[!_isThisYearAllowed(minDate, maxDate)]]" on-tap="_onThisYearTap">
+          [[i18n.thisYear]]
+        </vaadin-button>
+      </template>
       <vaadin-button id="cancelButton" part="cancel-button" on-tap="_cancel">
         [[i18n.cancel]]
       </vaadin-button>
@@ -247,6 +250,14 @@ This program is available under Apache License Version 2.0, available at https:/
             accuracy:{
               type: String,
               notify:true
+            },
+
+            /**
+             * Julien Wathelet,need date complete (accuracy activated or not)
+             */
+            needFullDate:{
+              type: Boolean,
+              notify: true
             },
 
             /**
