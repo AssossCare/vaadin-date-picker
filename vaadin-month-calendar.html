@@ -53,9 +53,27 @@ This program is available under Apache License Version 2.0, available at https:/
         width: 12.5%;
         flex-shrink: 0;
       }
+
+      [part="month-part-header"],
+      [part="year-part-header"]{
+        padding: 5px;
+      }
+
+      [part="month-part-header"][selected],
+      [part="year-part-header"][selected]{
+        text-decoration:underline;
+      }
+
+      [part="month-part-header"][focused],
+      [part="year-part-header"][focused] {
+        background: #eee;
+      }
     </style>
 
-    <div part="month-header" role="heading">[[_getTitle(month, i18n.monthNames)]]</div>
+    <div part="month-header" role="heading">
+      <span part="month-part-header" selected$="[[_isMonthSelected(month, selectedDate, accuracy)]]" focused$="[[_isMonthSelected(month, focusedDate, accuracy)]]" on-tap="_monthTap" month="[[month]]">[[_getTitle(month, i18n.monthNames)]] </span>
+      <span part="year-part-header" selected$="[[_isYearSelected(month, selectedDate, accuracy)]]" focused$="[[_isYearSelected(month, focusedDate, accuracy)]]" on-tap="_yearTap" month="[[month]]"> [[_getYear(month)]]</span>
+    </div><!-- ToDo julien wathelet ajouter le on-tap pour prendre la valeur mois-->
     <div id="monthGrid" on-tap="_handleTap" on-touchend="_preventDefault" on-touchstart="_onMonthGridTouchStart">
       <div id="weekdays-container">
         <div hidden="[[!_showWeekSeparator(showWeekNumbers, i18n.firstDayOfWeek)]]" part="weekday"></div>
@@ -76,8 +94,8 @@ This program is available under Apache License Version 2.0, available at https:/
             <div
                 part="date"
                 today$="[[_isToday(item)]]"
-                selected$="[[_dateEquals(item, selectedDate)]]"
-                focused$="[[_dateEquals(item, focusedDate)]]"
+                selected$="[[_dateEquals(item, selectedDate, accuracy)]]"
+                focused$="[[_dateEquals(item, focusedDate, accuracy)]]"
                 date="[[item]]"
                 disabled$="[[!_dateAllowed(item, minDate, maxDate)]]"
                 role$="[[_getRole(item)]]"
@@ -115,6 +133,23 @@ This program is available under Apache License Version 2.0, available at https:/
              */
             selectedDate: {
               type: Date,
+              notify: true
+            },
+
+            /**
+             * Julien Wathelet,need date complete (accuracy activated or not)
+             */
+            needFullDate:{
+              type: Boolean,
+              notify: true
+            },
+
+            /**
+             * @JulienWathelet can selected a date with a different accuracy (day, month, year)
+             */
+            accuracy:{
+              type: String,
+              value:"",
               notify: true
             },
 
@@ -174,8 +209,16 @@ This program is available under Apache License Version 2.0, available at https:/
           ];
         }
 
-        _dateEquals(date1, date2) {
-          return Vaadin.DatePickerHelper._dateEquals(date1, date2);
+        _dateEquals(date1, date2,accuracy) {
+          return accuracy==='day' && Vaadin.DatePickerHelper._dateEquals(date1, date2);
+        }
+
+        _isMonthSelected(month,date,accuracy){
+          return accuracy==="month" && !!date && date.getMonth()==month.getMonth()
+        }
+
+        _isYearSelected(month,date,accuracy){
+          return accuracy==="year" && !!date && date.getFullYear()==month.getFullYear()
         }
 
         _dateAllowed(date, min, max) {
@@ -245,6 +288,11 @@ This program is available under Apache License Version 2.0, available at https:/
           return date ? date.getDate() : '';
         }
 
+        _getYear(month){
+          return month ? month.getFullYear() : '';
+        }
+
+
         _showWeekNumbersChanged(showWeekNumbers, firstDayOfWeek) {
           if (showWeekNumbers && firstDayOfWeek === 1) {
             this.setAttribute('week-numbers', '');
@@ -312,7 +360,24 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _handleTap(e) {
           if (!this.ignoreTaps && !this._notTapping && e.target.date && !e.target.hasAttribute('disabled')) {
+            this.accuracy="day";
             this.selectedDate = e.target.date;
+            this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
+          }
+        }
+
+        _monthTap(e) {
+          if(!this.needFullDate && !this.ignoreTaps && !this._notTapping && e.target.month && !e.target.hasAttribute('disabled')) {
+            this.accuracy="month"
+            this.selectedDate = e.target.month;
+            this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
+          }
+        }
+
+        _yearTap(e) {
+          if(!this.needFullDate && !this.ignoreTaps && !this._notTapping && e.target.month && !e.target.hasAttribute('disabled')) {
+            this.accuracy="year"
+            this.selectedDate = e.target.month;
             this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
           }
         }
