@@ -19,7 +19,7 @@ function getDefaultI18n() {
     today: 'Today',
     cancel: 'Cancel',
     formatDate: function(d) {
-      return (d.month + 1) + '/' + d.day + '/' + d.year;
+      return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
     },
     formatTitle: function(monthName, fullYear) {
       return monthName + ' ' + fullYear;
@@ -36,21 +36,17 @@ function listenForEvent(elem, type, callback) {
 }
 
 function open(datepicker, callback) {
-  listenForEvent(datepicker.$.overlay, 'vaadin-overlay-open', callback);
+  listenForEvent(datepicker, 'iron-overlay-opened', callback);
   datepicker.open();
 }
 
 function close(datepicker, callback) {
-  listenForEvent(datepicker.$.overlay, 'vaadin-overlay-close', callback);
+  listenForEvent(datepicker, 'iron-overlay-closed', callback);
   datepicker.close();
 }
 
 function tap(element) {
   element.dispatchEvent(new CustomEvent('tap', {bubbles: true, detail: {}, composed: true}));
-}
-
-function click(element) {
-  element.dispatchEvent(new CustomEvent('click', {bubbles: true, detail: {}, composed: true}));
 }
 
 function monthsEqual(date1, date2) {
@@ -85,44 +81,41 @@ function describeSkipIf(bool, title, callback) {
   }
 }
 
-// As a side-effect has to toggle the overlay once to initialize it
-function getOverlayContent(datepicker) {
-  if (datepicker.$.overlay.hasAttribute('disable-upgrade')) {
-    datepicker.open();
-    datepicker.close();
+function waitUntilScrolledTo(overlay, date, callback) {
+  if (overlay.$.monthScroller.position) {
+    overlay._onMonthScroll();
   }
-  const overlayContent = datepicker.$.overlay.content.querySelector('#overlay-content');
-  overlayContent.$.monthScroller.bufferSize = 0;
-  overlayContent.$.yearScroller.bufferSize = 0;
-  return overlayContent;
+  var monthIndex = overlay._differenceInMonths(date, new Date());
+  if (overlay.$.monthScroller.position === monthIndex) {
+    Polymer.RenderStatus.afterNextRender(overlay, callback);
+  } else {
+    setTimeout(waitUntilScrolledTo, 10, overlay, date, callback);
+  }
 }
 
 // IE11 throws errors when the fixture is removed from the DOM and the focus remains in the native control.
 // Also, FF and Chrome are unable to focus input/button when tests are run in the headless window manager used in Travis
 function monkeyPatchNativeFocus() {
-  customElements.whenDefined('vaadin-text-field').then(() => {
-    const TextFieldElement = customElements.get('vaadin-text-field');
-    TextFieldElement.prototype.focus = function() {
+  if (window.Vaadin && Vaadin.TextFieldElement) {
+    Vaadin.TextFieldElement.prototype.focus = function() {
       this._setFocused(true);
     };
-    TextFieldElement.prototype.blur = function() {
+    Vaadin.TextFieldElement.prototype.blur = function() {
       this._setFocused(false);
     };
-  });
-
-  customElements.whenDefined('vaadin-button').then(() => {
-    const ButtonElement = customElements.get('vaadin-button');
-    ButtonElement.prototype.focus = function() {
+  }
+  if (window.Vaadin && Vaadin.ButtonElement) {
+    Vaadin.ButtonElement.prototype.focus = function() {
       this._setFocused(true);
     };
-  });
-
-  customElements.whenDefined('vaadin-date-picker').then(() => {
-    const DatePickerElement = customElements.get('vaadin-date-picker');
-    DatePickerElement.prototype.blur = function() {
+    Vaadin.DatePickerElement.prototype.blur = function() {
       this._inputElement._setFocused(false);
     };
-  });
+  }
 }
 
-window.addEventListener('WebComponentsReady', monkeyPatchNativeFocus);
+if (window.Polymer) { // Chrome
+  setTimeout(monkeyPatchNativeFocus, 1);
+} else { // Polyfill
+  window.addEventListener('WebComponentsReady', monkeyPatchNativeFocus);
+}

@@ -3,16 +3,13 @@
 
 <head>
   <meta charset="utf-8">
-  <script src="../../web-component-tester/browser.js"></script>
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <script src="../../web-component-tester/browser.js"></script>
 
   <link rel="import" href="../vaadin-date-picker.html">
   <link rel="import" href="../vaadin-date-picker-light.html">
-  <link rel="import" href="../src/vaadin-date-picker-overlay.html">
-  <link rel="import" href="../src/vaadin-date-picker-overlay-content.html">
-  <link rel="import" href="../src/vaadin-month-calendar.html">
-  <link rel="import" href="not-animated-styles.html">
+  <link rel="import" href="../vaadin-date-picker-overlay.html">
+  <link rel="import" href="../vaadin-month-calendar.html">
   <script src="common.js"></script>
 </head>
 
@@ -34,7 +31,7 @@
 
   <test-fixture id="overlay">
     <template>
-      <vaadin-date-picker-overlay-content></vaadin-date-picker-overlay-content>
+      <vaadin-date-picker-overlay></vaadin-date-picker-overlay>
     </template>
   </test-fixture>
 
@@ -49,10 +46,13 @@
     describe('WAI-ARIA', () => {
 
       describe('date picker', () => {
-        var datepicker, toggleButton;
+        var datepicker, toggleButton, clearButton;
 
         beforeEach(() => {
           datepicker = fixture('datepicker');
+          datepicker.$.overlay.$.monthScroller.bufferSize = 0;
+          datepicker.$.overlay.$.yearScroller.bufferSize = 0;
+          clearButton = datepicker.root.querySelector('[part="clear-button"]');
           toggleButton = datepicker.root.querySelector('[part="toggle-button"]');
         });
 
@@ -65,21 +65,25 @@
         it('should have button roles on buttons', () => {
           // Indicate icon buttons as clickable. Especially helpful on touch devices.
           expect(toggleButton.getAttribute('role')).to.equal('button');
+          expect(clearButton.getAttribute('role')).to.equal('button');
         });
 
         it('should have label properties on buttons', () => {
           // Give spoken names for the icon buttons.
           expect(toggleButton.getAttribute('aria-label')).to.equal('Calendar');
+          expect(clearButton.getAttribute('aria-label')).to.equal('Clear');
         });
 
         it('should have label properties on buttons in correct locale', () => {
           datepicker.set('i18n.calendar', 'kalenteri');
+          datepicker.set('i18n.clear', 'tyhjennä');
           expect(toggleButton.getAttribute('aria-label')).to.equal('kalenteri');
+          expect(clearButton.getAttribute('aria-label')).to.equal('tyhjennä');
         });
 
         it('should have expanded state false on calendar button', () => {
           // Indicate that there is a collabsible calendar, closed by default.
-          expect(toggleButton.getAttribute('aria-expanded')).not.to.be.ok;
+          expect(toggleButton.getAttribute('aria-expanded')).to.equal('false');
         });
 
         it('should have expanded state true on calendar button when opened', () => {
@@ -91,6 +95,21 @@
         it('should have label property on the input', () => {
           expect(datepicker._inputElement.getAttribute('aria-label')).to.equal('ariatest');
         });
+      });
+
+      describe('overlay hosting element', () => {
+        var datepicker, datepickerLight;
+
+        beforeEach(() => {
+          datepicker = fixture('datepicker');
+          datepickerLight = fixture('datepickerLight');
+        });
+
+        it('should have dialog role', () => {
+          expect(datepicker.$.overlay.getAttribute('role')).to.equal('dialog');
+          expect(datepickerLight.$.overlay.getAttribute('role')).to.equal('dialog');
+        });
+
       });
 
       describe('overlay contents', () => {
@@ -202,7 +221,6 @@
       });
 
       describe('month calendar contents', () => {
-        let monthCalendar;
 
         beforeEach(done => {
           monthCalendar = fixture('month-calendar');
@@ -283,15 +301,6 @@
           });
         });
 
-        it('should have presentation roles on empty date cells', () => {
-          var emptyDateElements = monthCalendar.root.querySelectorAll('[part="date"]:empty');
-
-          Array.prototype.forEach.call(emptyDateElements, emptyElement => {
-            expect(emptyElement.getAttribute('role')).to.equal('presentation');
-            expect(emptyElement.getAttribute('aria-label')).to.be.empty;
-          });
-        });
-
         describe('week numbers', () => {
           beforeEach(done => {
             monthCalendar.showWeekNumbers = true;
@@ -326,6 +335,8 @@
 
         beforeEach(() => {
           datepicker = fixture('datepicker');
+          datepicker.$.overlay.$.monthScroller.bufferSize = 0;
+          datepicker.$.overlay.$.yearScroller.bufferSize = 0;
         });
 
         function waitForAnnounce(callback) {
@@ -338,7 +349,7 @@
 
         it('should request availability from IronA11yAnnouncer', done => {
           var spy = sinon.spy(Polymer.IronA11yAnnouncer, 'requestAvailability');
-          datepicker.open();
+          fixture('datepicker');
           setTimeout(() => {
             expect(spy.called).to.be.true;
             done();
@@ -421,19 +432,18 @@
 
         if (!ios) {
           it('should announce once', done => {
+            var announceSpy = sinon.spy();
+            document.body.addEventListener('iron-announce', announceSpy);
+
             datepicker._focusedDate = new Date(2016, 1, 1);
+            datepicker.open();
+            datepicker._focusedDate = new Date(2016, 1, 2);
 
-            open(datepicker, () => {
-              var announceSpy = sinon.spy();
-              document.body.addEventListener('iron-announce', announceSpy);
-              datepicker._focusedDate = new Date(2016, 1, 2);
-
-              setTimeout(() => {
-                expect(announceSpy.callCount).to.be.equal(1);
-                document.body.removeEventListener('iron-announce', announceSpy);
-                done();
-              }, 1);
-            });
+            setTimeout(() => {
+              expect(announceSpy.callCount).to.be.equal(1);
+              document.body.removeEventListener('iron-announce', announceSpy);
+              done();
+            }, 1);
           });
         }
 

@@ -3,10 +3,9 @@
 
 <head>
   <meta charset="utf-8">
-  <script src="../../web-component-tester/browser.js"></script>
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
   <script src="common.js"></script>
-  <link rel="import" href="../../test-fixture/test-fixture.html">
 
   <link rel="import" href="../../polymer/polymer-element.html">
   <link rel="import" href="../../polymer/lib/utils/import-href.html">
@@ -23,10 +22,6 @@
   <script>
     describe('Late upgrade', () => {
       var datepicker;
-
-      if (!(window['Polymer'] && window['Polymer'].importHref)) {
-        return; // TODO: With Polymer 3 we don’t have the HTML to import
-      }
 
       beforeEach(() => datepicker = fixture('datepicker'));
 

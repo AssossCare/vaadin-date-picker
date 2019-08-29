@@ -43,5 +43,16 @@
     "vaadin-button": "^1.0.0",
     "web-component-tester": "^6.1.5",
     "vaadin-demo-helpers": "^1.0.0"
-  }
+  },
+  "homepage": "https://github.com/vaadin/vaadin-date-picker",
+  "version": "2.0.7",
+  "_release": "2.0.7",
+  "_resolution": {
+    "type": "version",
+    "tag": "v2.0.7",
+    "commit": "a93258e06155e7fb968eebfbdeb9752792f9cfd6"
+  },
+  "_source": "https://github.com/vaadin/vaadin-date-picker.git",
+  "_target": "2.0.7",
+  "_originalSource": "vaadin-date-picker"
 }

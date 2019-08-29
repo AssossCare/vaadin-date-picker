@@ -1,12 +1,3 @@
-bower_components
+bower_*
+bower-*
 node_modules
-package-lock.json
-yarn.lock
-coverage
-analysis.json
-.idea/workspace.xml
-.idea/vcs.xml
-.idea/topaz-date-picker.iml
-.idea/modules.xml
-.idea/misc.xml
-.idea/encodings.xml
