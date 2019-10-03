@@ -494,7 +494,7 @@ This program is available under Apache License Version 2.0, available at https:/
     }
 
     _valueChanged(value, oldValue) {
-        let parts = value ? value.split("-") : []
+        let parts = value && typeof value==="string" ? value.split("-") : []
         this._handleDateChange('_selectedDate',parts.length ? parts[0]+"-"+(parts[1]==="00" ? "01" : parts[1])+"-"+(parts[2]==="00" ? "01" : parts[2]) : value, oldValue);
     }
 
