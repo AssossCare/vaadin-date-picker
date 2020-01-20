@@ -4,3 +4,9 @@ package-lock.json
 yarn.lock
 coverage
 analysis.json
+.idea/vcs.xml
+.idea/topaz-date-picker.iml
+.idea/modules.xml
+.idea/misc.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/.gitignore

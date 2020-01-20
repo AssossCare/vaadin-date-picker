@@ -52,9 +52,25 @@ This program is available under Apache License Version 2.0, available at https:/
         width: 12.5%;
         flex-shrink: 0;
       }
+
+      [part="span-header"]:hover{
+        cursor: pointer;
+        text-decoration:underline;
+      }
+      [part="span-header"][disabled]{
+        color: grey;
+      }
+      [part="span-header"][disabled]:hover{
+        cursor: default;
+        text-decoration:none;
+      }
+
     </style>
 
-    <div part="month-header" role="heading">[[_getTitle(month, i18n.monthNames)]]</div>
+    <div part="month-header" role="heading">
+      <span id="month-header" part="span-header" disabled$="[[_isMonthClickable(minDate, maxDate, canBeFuzzy)]]" on-tap="_monthTap">[[_getMonth(month, i18n.monthNames)]]</span>
+      <span id="year-header" part="span-header" disabled$="[[_isYearClickable(minDate, maxDate, canBeFuzzy)]]" on-tap="_yearTap">[[_getYear(month, i18n.monthNames)]]</span>
+    </div>
     <div id="monthGrid" on-tap="_handleTap" on-touchend="_preventDefault" on-touchstart="_onMonthGridTouchStart">
       <div id="weekdays-container">
         <div hidden="[[!_showWeekSeparator(showWeekNumbers, i18n.firstDayOfWeek)]]" part="weekday"></div>
@@ -118,6 +134,11 @@ This program is available under Apache License Version 2.0, available at https:/
               notify: true
             },
 
+            accuracy:{
+              type: String,
+                notify : true
+            },
+
             /**
              * A `Date` object for the currently focused date.
              */
@@ -164,6 +185,10 @@ This program is available under Apache License Version 2.0, available at https:/
               type: Boolean,
               reflectToAttribute: true,
               computed: '_isDisabled(month, minDate, maxDate)'
+            },
+
+            canBeFuzzy:{
+              type:Boolean
             }
           };
         }
@@ -207,11 +232,18 @@ This program is available under Apache License Version 2.0, available at https:/
             && !this._dateAllowed(lastDate, minDate, maxDate);
         }
 
-        _getTitle(month, monthNames) {
+        _getYear(month, monthNames) {
           if (month === undefined || monthNames === undefined) {
             return;
           }
           return this.i18n.formatTitle(monthNames[month.getMonth()], month.getFullYear());
+        }
+
+        _getMonth(month, monthNames) {
+          if (month === undefined || monthNames === undefined) {
+            return;
+          }
+          return monthNames[month.getMonth()];
         }
 
         _onMonthGridTouchStart() {
@@ -320,8 +352,68 @@ This program is available under Apache License Version 2.0, available at https:/
         _handleTap(e) {
           if (!this.ignoreTaps && !this._notTapping && e.target.date && !e.target.hasAttribute('disabled')) {
             this.selectedDate = e.target.date;
+            this.accuracy="day"
             this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
           }
+        }
+
+        _monthTap(){
+          if(this.canBeFuzzy){
+              const date = new Date(0,0);
+              date.setMonth(this.month.getMonth());
+              date.setFullYear(this.month.getFullYear())
+              date.setDate(1)
+              this.accuracy="month"
+              this.selectedDate=date
+            this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
+          }
+        }
+        _yearTap(){
+          if(this.canBeFuzzy){
+              const date = new Date(0,0);
+              date.setMonth(0);
+              date.setFullYear(this.month.getFullYear())
+              date.setDate(1)
+              this.accuracy="year"
+              this.selectedDate=date
+              this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
+          }
+        }
+
+        _isMonthClickable(min,max){
+          if(this.canBeFuzzy)return false
+          const today = new Date();
+          const start = new Date(0,0);
+          const end = new Date(0,0);
+
+          start.setFullYear(today.getFullYear())
+          end.setFullYear(today.getFullYear())
+
+          start.setMonth(today.getMonth());
+          end.setMonth(today.getMonth()+1);
+
+          start.setDate(0);
+          end.setDate(0);
+
+          return (!min || end >= min) && (!max || start <= max)
+        }
+
+        _isYearClickable(min,max){
+          if(this.canBeFuzzy)return false
+          const today = new Date();
+          const start = new Date(0,0);
+          const end = new Date(0,0);
+
+          start.setFullYear(today.getFullYear())
+          end.setFullYear(today.getFullYear()+1)
+
+          start.setMonth(0);
+          end.setMonth(0);
+
+          start.setDate(0);
+          end.setDate(0);
+
+          return (!min || end >= min) && (!max || start <= max)
         }
 
         _preventDefault(e) {

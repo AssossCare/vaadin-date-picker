@@ -175,6 +175,8 @@ This program is available under Apache License Version 2.0, available at https:/
         <template>
           <vaadin-month-calendar
             i18n="[[i18n]]"
+            can-be-fuzzy = "[[canBeFuzzy]]"
+            accuracy="{{accuracy}}"
             month="[[_dateAfterXMonths(index)]]"
             selected-date="{{selectedDate}}"
             focused-date="[[focusedDate]]"
@@ -197,6 +199,17 @@ This program is available under Apache License Version 2.0, available at https:/
         </template>
       </vaadin-infinite-scroller>
     </div>
+
+    <template is="dom-if" if="[[canBeFuzzy]]">
+      <div on-touchend="_preventDefault" role="toolbar" part="toolbar">
+        <vaadin-button id="thisMonthButton" part="today-button" disabled="[[!_isThisMonthAllowed(minDate, maxDate,canBeFuzzy)]]" on-tap="_onThisMonthTap">
+          [[i18n.thisMonth]]
+        </vaadin-button>
+        <vaadin-button id="thisYearButton" part="today-button" disabled="[[!_isThisYearAllowed(minDate, maxDate,canBeFuzzy)]]" on-tap="_onThisYearTap">
+          [[i18n.thisYear]]
+        </vaadin-button>
+      </div>
+    </template>
 
     <div on-touchend="_preventDefault" role="toolbar" part="toolbar">
       <vaadin-button id="todayButton" part="today-button" disabled="[[!_isTodayAllowed(minDate, maxDate)]]" on-tap="_onTodayTap">
@@ -232,6 +245,11 @@ This program is available under Apache License Version 2.0, available at https:/
             selectedDate: {
               type: Date,
               notify: true
+            },
+
+            accuracy : {
+              type : String,
+                notify: true
             },
 
             /**
@@ -296,7 +314,9 @@ This program is available under Apache License Version 2.0, available at https:/
             /**
              * Input label
              */
-            label: String
+            label: String,
+
+            canBeFuzzy:Boolean
           };
         }
 
@@ -460,12 +480,45 @@ This program is available under Apache License Version 2.0, available at https:/
           if (Math.abs(this.$.monthScroller.position - this._differenceInMonths(today, this._originDate)) < 0.001) {
             // Select today only if the month scroller is positioned approximately
             // at the beginning of the current month
+            this.accuracy = "day"
             this.selectedDate = today;
             this._close();
           } else {
             this._scrollToCurrentMonth();
           }
         }
+
+        _onThisMonthTap() {
+          var startOfMonth = new Date();
+          startOfMonth.setDate(0)
+
+          if (Math.abs(this.$.monthScroller.position - this._differenceInMonths(startOfMonth, this._originDate)) < 0.001) {
+            // Select today only if the month scroller is positioned approximately
+            // at the beginning of the current month
+            this.accuracy = "month"
+            this.selectedDate = startOfMonth;
+            this._close();
+          } else {
+            this._scrollToCurrentMonth();
+          }
+        }
+
+        _onThisYearTap() {
+          var startOfYear = new Date();
+          startOfYear.setMonth(0)
+          startOfYear.setDate(0)
+
+          if (Math.abs(this.$.monthScroller.position - this._differenceInMonths(startOfYear, this._originDate)) < 0.001) {
+            // Select today only if the month scroller is positioned approximately
+            // at the beginning of the current month
+            this.accuracy = "year"
+            this.selectedDate = startOfYear;
+            this._close();
+          } else {
+            this._scrollToCurrentMonth();
+          }
+        }
+
 
         _scrollToCurrentMonth() {
           if (this.focusedDate) {
@@ -889,6 +942,40 @@ This program is available under Apache License Version 2.0, available at https:/
           todayMidnight.setMonth(today.getMonth());
           todayMidnight.setDate(today.getDate());
           return this._dateAllowed(todayMidnight, min, max);
+        }
+
+        _isThisMonthAllowed(min, max){
+          const today = new Date();
+          const start = new Date(0,0);
+          const end = new Date(0,0);
+
+          start.setFullYear(today.getFullYear())
+          end.setFullYear(today.getFullYear())
+
+          start.setMonth(today.getMonth());
+          end.setMonth(today.getMonth()+1);
+
+          start.setDate(0);
+          end.setDate(0);
+
+          return (!min || end >= min) && (!max || start <= max)
+        }
+
+        _isThisYearAllowed(min, max){
+          const today = new Date();
+          const start = new Date(0,0);
+          const end = new Date(0,0);
+
+          start.setFullYear(today.getFullYear())
+          end.setFullYear(today.getFullYear()+1)
+
+          start.setMonth(0);
+          end.setMonth(0);
+
+          start.setDate(0);
+          end.setDate(0);
+
+          return (!min || end >= min) && (!max || start <= max)
         }
 
         _stopPropagation(e) {
