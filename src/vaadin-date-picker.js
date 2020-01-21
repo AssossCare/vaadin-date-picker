@@ -7,14 +7,14 @@ import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 
 import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-media-query/iron-media-query.js';
-import { ThemableMixin } from 'vaadin-themable-mixin/vaadin-themable-mixin.js';
-import { ThemePropertyMixin } from 'vaadin-themable-mixin/vaadin-theme-property-mixin.js';
-import { ControlStateMixin } from 'vaadin-control-state-mixin/vaadin-control-state-mixin.js';
+import { ThemableMixin } from '@vaadin/vaadin-themable-mixin/vaadin-themable-mixin.js';
+import { ThemePropertyMixin } from '@vaadin/vaadin-themable-mixin/vaadin-theme-property-mixin.js';
+import { ControlStateMixin } from '@vaadin/vaadin-control-state-mixin/vaadin-control-state-mixin.js';
 import './vaadin-date-picker-overlay.js';
 import './vaadin-date-picker-overlay-content.js';
 import { DatePickerMixin } from './vaadin-date-picker-mixin.js';
 import 'vaadin-text-field/src/vaadin-text-field.js';
-import { ElementMixin } from 'vaadin-element-mixin/vaadin-element-mixin.js';
+import { ElementMixin } from '@vaadin/vaadin-element-mixin/vaadin-element-mixin.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 /**

@@ -8,7 +8,7 @@ import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import { DatePickerHelper } from './vaadin-date-picker-helper.js';
-import { ThemableMixin } from 'vaadin-themable-mixin/vaadin-themable-mixin.js';
+import { ThemableMixin } from '@vaadin/vaadin-themable-mixin/vaadin-themable-mixin.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 /**
  * @memberof Vaadin

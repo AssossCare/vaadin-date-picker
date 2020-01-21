@@ -6,8 +6,8 @@ This program is available under Apache License Version 2.0, available at https:/
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 
 import '@polymer/iron-media-query/iron-media-query.js';
-import { ThemableMixin } from 'vaadin-themable-mixin/vaadin-themable-mixin.js';
-import { ThemePropertyMixin } from 'vaadin-themable-mixin/vaadin-theme-property-mixin.js';
+import { ThemableMixin } from '@vaadin/vaadin-themable-mixin/vaadin-themable-mixin.js';
+import { ThemePropertyMixin } from '@vaadin/vaadin-themable-mixin/vaadin-theme-property-mixin.js';
 import './vaadin-date-picker-overlay.js';
 import './vaadin-date-picker-overlay-content.js';
 import { DatePickerMixin } from './vaadin-date-picker-mixin.js';

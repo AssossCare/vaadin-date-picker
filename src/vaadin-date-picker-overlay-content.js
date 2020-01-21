@@ -9,9 +9,9 @@ import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event
 import '@polymer/iron-media-query/iron-media-query.js';
 import { IronA11yKeysBehavior } from '@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
 import { IronA11yAnnouncer } from '@polymer/iron-a11y-announcer/iron-a11y-announcer.js';
-import 'vaadin-button/src/vaadin-button.js';
-import { ThemableMixin } from 'vaadin-themable-mixin/vaadin-themable-mixin.js';
-import { ThemePropertyMixin } from 'vaadin-themable-mixin/vaadin-theme-property-mixin.js';
+import '@vaadin/vaadin-button/src/vaadin-button.js';
+import { ThemableMixin } from '@vaadin/vaadin-themable-mixin/vaadin-themable-mixin.js';
+import { ThemePropertyMixin } from '@vaadin/vaadin-themable-mixin/vaadin-theme-property-mixin.js';
 import './vaadin-month-calendar.js';
 import './vaadin-infinite-scroller.js';
 import { DatePickerHelper } from './vaadin-date-picker-helper.js';
