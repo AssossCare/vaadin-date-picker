@@ -247,9 +247,9 @@ This program is available under Apache License Version 2.0, available at https:/
               notify: true
             },
 
-            accuracy : {
-              type : String,
-                notify: true
+            accuracy: {
+              type: String,
+              notify: true
             },
 
             /**
@@ -316,7 +316,7 @@ This program is available under Apache License Version 2.0, available at https:/
              */
             label: String,
 
-            canBeFuzzy:Boolean
+            canBeFuzzy: Boolean
           };
         }
 
@@ -480,7 +480,7 @@ This program is available under Apache License Version 2.0, available at https:/
           if (Math.abs(this.$.monthScroller.position - this._differenceInMonths(today, this._originDate)) < 0.001) {
             // Select today only if the month scroller is positioned approximately
             // at the beginning of the current month
-            this.accuracy = "day"
+            this.accuracy = 'day';
             this.selectedDate = today;
             this._close();
           } else {
@@ -490,12 +490,12 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _onThisMonthTap() {
           var startOfMonth = new Date();
-          startOfMonth.setDate(0)
+          startOfMonth.setDate(0);
 
           if (Math.abs(this.$.monthScroller.position - this._differenceInMonths(startOfMonth, this._originDate)) < 0.001) {
             // Select today only if the month scroller is positioned approximately
             // at the beginning of the current month
-            this.accuracy = "month"
+            this.accuracy = 'month';
             this.selectedDate = startOfMonth;
             this._close();
           } else {
@@ -505,13 +505,13 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _onThisYearTap() {
           var startOfYear = new Date();
-          startOfYear.setMonth(0)
-          startOfYear.setDate(0)
+          startOfYear.setMonth(0);
+          startOfYear.setDate(0);
 
           if (Math.abs(this.$.monthScroller.position - this._differenceInMonths(startOfYear, this._originDate)) < 0.001) {
             // Select today only if the month scroller is positioned approximately
             // at the beginning of the current month
-            this.accuracy = "year"
+            this.accuracy = 'year';
             this.selectedDate = startOfYear;
             this._close();
           } else {
@@ -944,30 +944,30 @@ This program is available under Apache License Version 2.0, available at https:/
           return this._dateAllowed(todayMidnight, min, max);
         }
 
-        _isThisMonthAllowed(min, max){
+        _isThisMonthAllowed(min, max) {
           const today = new Date();
-          const start = new Date(0,0);
-          const end = new Date(0,0);
+          const start = new Date(0, 0);
+          const end = new Date(0, 0);
 
-          start.setFullYear(today.getFullYear())
-          end.setFullYear(today.getFullYear())
+          start.setFullYear(today.getFullYear());
+          end.setFullYear(today.getFullYear());
 
           start.setMonth(today.getMonth());
-          end.setMonth(today.getMonth()+1);
+          end.setMonth(today.getMonth() + 1);
 
           start.setDate(0);
           end.setDate(0);
 
-          return (!min || end >= min) && (!max || start <= max)
+          return (!min || end >= min) && (!max || start <= max);
         }
 
-        _isThisYearAllowed(min, max){
+        _isThisYearAllowed(min, max) {
           const today = new Date();
-          const start = new Date(0,0);
-          const end = new Date(0,0);
+          const start = new Date(0, 0);
+          const end = new Date(0, 0);
 
-          start.setFullYear(today.getFullYear())
-          end.setFullYear(today.getFullYear()+1)
+          start.setFullYear(today.getFullYear());
+          end.setFullYear(today.getFullYear() + 1);
 
           start.setMonth(0);
           end.setMonth(0);
@@ -975,7 +975,7 @@ This program is available under Apache License Version 2.0, available at https:/
           start.setDate(0);
           end.setDate(0);
 
-          return (!min || end >= min) && (!max || start <= max)
+          return (!min || end >= min) && (!max || start <= max);
         }
 
         _stopPropagation(e) {

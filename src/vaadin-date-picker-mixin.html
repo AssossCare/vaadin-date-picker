@@ -298,15 +298,15 @@ This program is available under Apache License Version 2.0, available at https:/
 
         _overlayInitialized: Boolean,
 
-        canBeFuzzy : {
-            type : Boolean,
-            value : false,
-            notify : true
+        canBeFuzzy: {
+          type: Boolean,
+          value: false,
+          notify: true
         },
-        accuracy : {
-            type : String,
-            value : 'day',
-            notify: true
+        accuracy: {
+          type: String,
+          value: 'day',
+          notify: true
         }
       };
     }
@@ -434,8 +434,8 @@ This program is available under Apache License Version 2.0, available at https:/
 
       var date = new Date(0, 0); // Wrong date (1900-01-01), but with midnight in local time
       date.setFullYear(parseInt(parts[1], 10));
-      date.setMonth(this.accuracy!=="year" ? parseInt(parts[2], 10) - 1 : 0);
-      date.setDate(this.accuracy==="day" ?parseInt(parts[3], 10) : 1);
+      date.setMonth(this.accuracy !== 'year' ? parseInt(parts[2], 10) - 1 : 0);
+      date.setDate(this.accuracy === 'day' ? parseInt(parts[3], 10) : 1);
       return date;
     }
 
@@ -443,7 +443,7 @@ This program is available under Apache License Version 2.0, available at https:/
       return !this._inputElement || fullscreen || ios || !i18n.parseDate;
     }
 
-    _formatISO(date,accuracy) {
+    _formatISO(date, accuracy) {
       if (!(date instanceof Date) || accuracy === undefined) {
         return '';
       }
@@ -463,8 +463,8 @@ This program is available under Apache License Version 2.0, available at https:/
       }
 
       const year = yearSign + pad(yearAbs, yearFmt);
-      const month = accuracy==="year" ? "00" : pad(date.getMonth() + 1);
-      const day =accuracy!=="day" ? "00" : pad(date.getDate());
+      const month = accuracy === 'year' ? '00' : pad(date.getMonth() + 1);
+      const day = accuracy !== 'day' ? '00' : pad(date.getDate());
       return [year, month, day].join('-');
     }
 
@@ -480,17 +480,17 @@ This program is available under Apache License Version 2.0, available at https:/
       }
     }
 
-    _selectedDateChanged(selectedDate, formatDate,accuracy) {
+    _selectedDateChanged(selectedDate, formatDate, accuracy) {
       if (selectedDate === undefined || formatDate === undefined || accuracy === undefined) {
         return;
       }
       if (this.__userInputOccurred) {
         this.__dispatchChange = true;
       }
-      //return XXXX xx/xxxx xx/xx/xxxx
-      const inputValue = selectedDate && formatDate(Vaadin.DatePickerHelper._extractDateParts(selectedDate),accuracy);
-      //return XXXX-00-00
-      const value = this._formatISO(selectedDate,accuracy);
+      // return XXXX xx/xxxx xx/xx/xxxx
+      const inputValue = selectedDate && formatDate(Vaadin.DatePickerHelper._extractDateParts(selectedDate), accuracy);
+      // return XXXX-00-00
+      const value = this._formatISO(selectedDate, accuracy);
       if (value !== this.value) {
         this.validate(inputValue);
         this.value = value;
@@ -729,7 +729,7 @@ This program is available under Apache License Version 2.0, available at https:/
      */
     checkValidity(value) {
       var inputValid = !value ||
-        (this._selectedDate && value === this.i18n.formatDate(Vaadin.DatePickerHelper._extractDateParts(this._selectedDate),this.accuracy));
+        (this._selectedDate && value === this.i18n.formatDate(Vaadin.DatePickerHelper._extractDateParts(this._selectedDate), this.accuracy));
       var minMaxValid = !this._selectedDate ||
         Vaadin.DatePickerHelper._dateAllowed(this._selectedDate, this._minDate, this._maxDate);
 
@@ -819,10 +819,10 @@ This program is available under Apache License Version 2.0, available at https:/
 
           break;
         case 'enter': {
-            const date =this._inputValue
-            this.accuracy=/^(0[\/-])?(0[\/-])?-?[0-9]{2,4}$/.test(this._inputValue) ? "year" :
-                /^(0[\/-])?([0-1]?[1-9][\/-])-?[0-9]{2,4}$/.test(this._inputValue) ? "month" :
-                /^(([0-3][1-9])|[1-9])[\/-]?(([0,1][1-9])|[1-9])[\/-]?-?([0-9]){2,4}$/.test(this._inputValue) ? "day" : this.accuracy
+          const date = this._inputValue;
+          this.accuracy = /^(0[\/-])?(0[\/-])?-?[0-9]{2,4}$/.test(this._inputValue) ? 'year' :
+            /^(0[\/-])?([0-1]?[1-9][\/-])-?[0-9]{2,4}$/.test(this._inputValue) ? 'month' :
+              /^(([0-3][1-9])|[1-9])[\/-]?(([0,1][1-9])|[1-9])[\/-]?-?([0-9]){2,4}$/.test(this._inputValue) ? 'day' : this.accuracy;
           const dateObject = this.i18n.parseDate(date);
           const parsedDate = dateObject &&
             this._parseDate(dateObject.year + '-' + dateObject.month + '-' + dateObject.day);

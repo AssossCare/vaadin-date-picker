@@ -53,16 +53,18 @@ This program is available under Apache License Version 2.0, available at https:/
         flex-shrink: 0;
       }
 
-      [part="span-header"]:hover{
+      [part="span-header"]:hover {
         cursor: pointer;
-        text-decoration:underline;
+        text-decoration: underline;
       }
-      [part="span-header"][disabled]{
+
+      [part="span-header"][disabled] {
         color: grey;
       }
-      [part="span-header"][disabled]:hover{
+
+      [part="span-header"][disabled]:hover {
         cursor: default;
-        text-decoration:none;
+        text-decoration: none;
       }
 
     </style>
@@ -134,9 +136,9 @@ This program is available under Apache License Version 2.0, available at https:/
               notify: true
             },
 
-            accuracy:{
+            accuracy: {
               type: String,
-                notify : true
+              notify: true
             },
 
             /**
@@ -187,8 +189,12 @@ This program is available under Apache License Version 2.0, available at https:/
               computed: '_isDisabled(month, minDate, maxDate)'
             },
 
-            canBeFuzzy:{
-              type:Boolean
+            canBeFuzzy: {
+              type: Boolean
+            },
+
+            item: {
+              type: Object
             }
           };
         }
@@ -352,60 +358,64 @@ This program is available under Apache License Version 2.0, available at https:/
         _handleTap(e) {
           if (!this.ignoreTaps && !this._notTapping && e.target.date && !e.target.hasAttribute('disabled')) {
             this.selectedDate = e.target.date;
-            this.accuracy="day"
+            this.accuracy = 'day';
             this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
           }
         }
 
-        _monthTap(){
-          if(this.canBeFuzzy){
-              const date = new Date(0,0);
-              date.setMonth(this.month.getMonth());
-              date.setFullYear(this.month.getFullYear())
-              date.setDate(1)
-              this.accuracy="month"
-              this.selectedDate=date
+        _monthTap() {
+          if (this.canBeFuzzy) {
+            const date = new Date(0, 0);
+            date.setMonth(this.month.getMonth());
+            date.setFullYear(this.month.getFullYear());
+            date.setDate(1);
+            this.accuracy = 'month';
+            this.selectedDate = date;
             this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
           }
         }
-        _yearTap(){
-          if(this.canBeFuzzy){
-              const date = new Date(0,0);
-              date.setMonth(0);
-              date.setFullYear(this.month.getFullYear())
-              date.setDate(1)
-              this.accuracy="year"
-              this.selectedDate=date
-              this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
+        _yearTap() {
+          if (this.canBeFuzzy) {
+            const date = new Date(0, 0);
+            date.setMonth(0);
+            date.setFullYear(this.month.getFullYear());
+            date.setDate(1);
+            this.accuracy = 'year';
+            this.selectedDate = date;
+            this.dispatchEvent(new CustomEvent('date-tap', {bubbles: true, composed: true}));
           }
         }
 
-        _isMonthClickable(min,max){
-          if(this.canBeFuzzy)return false
+        _isMonthClickable(min, max) {
+          if (this.canBeFuzzy) {
+            return false;
+          }
           const today = new Date();
-          const start = new Date(0,0);
-          const end = new Date(0,0);
+          const start = new Date(0, 0);
+          const end = new Date(0, 0);
 
-          start.setFullYear(today.getFullYear())
-          end.setFullYear(today.getFullYear())
+          start.setFullYear(today.getFullYear());
+          end.setFullYear(today.getFullYear());
 
           start.setMonth(today.getMonth());
-          end.setMonth(today.getMonth()+1);
+          end.setMonth(today.getMonth() + 1);
 
           start.setDate(0);
           end.setDate(0);
 
-          return (!min || end >= min) && (!max || start <= max)
+          return (!min || end >= min) && (!max || start <= max);
         }
 
-        _isYearClickable(min,max){
-          if(this.canBeFuzzy)return false
+        _isYearClickable(min, max) {
+          if (this.canBeFuzzy) {
+            return false;
+          }
           const today = new Date();
-          const start = new Date(0,0);
-          const end = new Date(0,0);
+          const start = new Date(0, 0);
+          const end = new Date(0, 0);
 
-          start.setFullYear(today.getFullYear())
-          end.setFullYear(today.getFullYear()+1)
+          start.setFullYear(today.getFullYear());
+          end.setFullYear(today.getFullYear() + 1);
 
           start.setMonth(0);
           end.setMonth(0);
@@ -413,7 +423,7 @@ This program is available under Apache License Version 2.0, available at https:/
           start.setDate(0);
           end.setDate(0);
 
-          return (!min || end >= min) && (!max || start <= max)
+          return (!min || end >= min) && (!max || start <= max);
         }
 
         _preventDefault(e) {

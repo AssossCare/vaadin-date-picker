@@ -15,5 +15,8 @@
     "Polymer": false,
     "WeakMap": false,
     "Vaadin": false
+  },
+  "rules": {
+    "linebreak-style" : 0
   }
 }
