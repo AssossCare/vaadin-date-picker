@@ -1,6 +1,7 @@
-<link rel="import" href="../../../vaadin-material-styles/mixins/overlay.html">
+import 'vaadin-material-styles/mixins/overlay.js';
+const $_documentContainer = document.createElement('template');
 
-<dom-module id="material-date-picker-overlay" theme-for="vaadin-date-picker-overlay">
+$_documentContainer.innerHTML = `<dom-module id="material-date-picker-overlay" theme-for="vaadin-date-picker-overlay">
   <template>
     <style include="material-overlay">
       :host([fullscreen]) {
@@ -40,4 +41,6 @@
       }
     </style>
   </template>
-</dom-module>
+</dom-module>`;
+
+document.head.appendChild($_documentContainer.content);

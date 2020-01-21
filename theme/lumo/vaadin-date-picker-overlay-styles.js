@@ -1,8 +1,9 @@
-<link rel="import" href="../../../vaadin-lumo-styles/sizing.html">
-<link rel="import" href="../../../vaadin-lumo-styles/spacing.html">
-<link rel="import" href="../../../vaadin-lumo-styles/mixins/menu-overlay.html">
+import 'vaadin-lumo-styles/sizing.js';
+import 'vaadin-lumo-styles/spacing.js';
+import 'vaadin-lumo-styles/mixins/menu-overlay.js';
+const $_documentContainer = document.createElement('template');
 
-<dom-module id="lumo-date-picker-overlay" theme-for="vaadin-date-picker-overlay">
+$_documentContainer.innerHTML = `<dom-module id="lumo-date-picker-overlay" theme-for="vaadin-date-picker-overlay">
   <template>
     <style include="lumo-menu-overlay">
       [part="overlay"] {
@@ -45,4 +46,6 @@
       }
     </style>
   </template>
-</dom-module>
+</dom-module>`;
+
+document.head.appendChild($_documentContainer.content);

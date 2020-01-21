@@ -110,63 +110,64 @@
     </vaadin-demo-snippet>
 
   </template>
-  <script>
-    class DatePickerPresentationDemos extends DemoReadyEventEmitter(DatePickerDemo(Polymer.Element)) {
-      static get is() {
-        return 'date-picker-presentation-demos';
-      }
+  <script type="module">
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+class DatePickerPresentationDemos extends DemoReadyEventEmitter(DatePickerDemo(PolymerElement)) {
+  static get is() {
+    return 'date-picker-presentation-demos';
+  }
 
-      static get properties() {
-        return {
-          i18n: {
-            type: Object,
-            value: {
-              monthNames: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-                'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
-              weekdays: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
-              weekdaysShort: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
-              firstDayOfWeek: 0,
-              week: 'Semaine',
-              calendar: 'Calendrier',
-              clear: 'Effacer',
-              today: 'Aujourd\'hui',
-              cancel: 'Annuler',
-              formatDate: d => {
-                const yearStr = String(d.year).replace(/\d+/, y => '0000'.substr(y.length) + y);
-                return [d.day, d.month + 1, yearStr].join('/');
-              },
-              parseDate: text => {
-                const parts = text.split('/');
-                const today = new Date();
-                let date, month = today.getMonth(), year = today.getFullYear();
+  static get properties() {
+    return {
+      i18n: {
+        type: Object,
+        value: {
+          monthNames: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
+          weekdays: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
+          weekdaysShort: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+          firstDayOfWeek: 0,
+          week: 'Semaine',
+          calendar: 'Calendrier',
+          clear: 'Effacer',
+          today: 'Aujourd\'hui',
+          cancel: 'Annuler',
+          formatDate: d => {
+            const yearStr = String(d.year).replace(/\d+/, y => '0000'.substr(y.length) + y);
+            return [d.day, d.month + 1, yearStr].join('/');
+          },
+          parseDate: text => {
+            const parts = text.split('/');
+            const today = new Date();
+            let date, month = today.getMonth(), year = today.getFullYear();
 
-                if (parts.length === 3) {
-                  year = parseInt(parts[2]);
-                  if (parts[2].length < 3 && year >= 0) {
-                    year += year < 30 ? 2000 : 1900;
-                  }
-                  month = parseInt(parts[0]) - 1;
-                  date = parseInt(parts[1]);
-                } else if (parts.length === 2) {
-                  month = parseInt(parts[0]) - 1;
-                  date = parseInt(parts[1]);
-                } else if (parts.length === 1) {
-                  date = parseInt(parts[0]);
-                }
-
-                if (date !== undefined) {
-                  return {day: date, month, year};
-                }
-              },
-              formatTitle: (monthName, fullYear) => {
-                return fullYear;
+            if (parts.length === 3) {
+              year = parseInt(parts[2]);
+              if (parts[2].length < 3 && year >= 0) {
+                year += year < 30 ? 2000 : 1900;
               }
+              month = parseInt(parts[0]) - 1;
+              date = parseInt(parts[1]);
+            } else if (parts.length === 2) {
+              month = parseInt(parts[0]) - 1;
+              date = parseInt(parts[1]);
+            } else if (parts.length === 1) {
+              date = parseInt(parts[0]);
             }
-          }
-        };
 
+            if (date !== undefined) {
+              return {day: date, month, year};
+            }
+          },
+          formatTitle: (monthName, fullYear) => {
+            return fullYear;
+          }
+        }
       }
-    }
-    customElements.define(DatePickerPresentationDemos.is, DatePickerPresentationDemos);
-  </script>
+    };
+
+  }
+}
+customElements.define(DatePickerPresentationDemos.is, DatePickerPresentationDemos);
+</script>
 </dom-module>

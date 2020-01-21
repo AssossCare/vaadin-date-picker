@@ -24,12 +24,13 @@
 
 
   </template>
-  <script>
-    class DatePickerThemeVariantsDemos extends DemoReadyEventEmitter(DatePickerDemo(Polymer.Element)) {
-      static get is() {
-        return 'date-picker-theme-variants-demos';
-      }
-    }
-    customElements.define(DatePickerThemeVariantsDemos.is, DatePickerThemeVariantsDemos);
-  </script>
+  <script type="module">
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+class DatePickerThemeVariantsDemos extends DemoReadyEventEmitter(DatePickerDemo(PolymerElement)) {
+  static get is() {
+    return 'date-picker-theme-variants-demos';
+  }
+}
+customElements.define(DatePickerThemeVariantsDemos.is, DatePickerThemeVariantsDemos);
+</script>
 </dom-module>

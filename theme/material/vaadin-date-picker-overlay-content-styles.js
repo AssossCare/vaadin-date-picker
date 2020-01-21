@@ -1,11 +1,11 @@
-<link rel="import" href="../../../vaadin-material-styles/color.html">
-<link rel="import" href="../../../vaadin-material-styles/font-icons.html">
-<link rel="import" href="../../../vaadin-material-styles/typography.html">
-<link rel="import" href="../../../vaadin-material-styles/shadow.html">
+import 'vaadin-material-styles/color.js';
+import 'vaadin-material-styles/font-icons.js';
+import 'vaadin-material-styles/typography.js';
+import 'vaadin-material-styles/shadow.js';
+import 'vaadin-button/theme/material/vaadin-button.js';
+const $_documentContainer = document.createElement('template');
 
-<link rel="import" href="../../../vaadin-button/theme/material/vaadin-button.html">
-
-<dom-module id="material-date-picker-overlay-content" theme-for="vaadin-date-picker-overlay-content">
+$_documentContainer.innerHTML = `<dom-module id="material-date-picker-overlay-content" theme-for="vaadin-date-picker-overlay-content">
   <template>
     <style>
       :host {
@@ -173,4 +173,6 @@
       }
     </style>
   </template>
-</dom-module>
+</dom-module>`;
+
+document.head.appendChild($_documentContainer.content);

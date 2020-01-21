@@ -48,12 +48,13 @@
     </vaadin-demo-snippet>
 
   </template>
-  <script>
-    class DatePickerBasicDemos extends DemoReadyEventEmitter(DatePickerDemo(Polymer.Element)) {
-      static get is() {
-        return 'date-picker-basic-demos';
-      }
-    }
-    customElements.define(DatePickerBasicDemos.is, DatePickerBasicDemos);
-  </script>
+  <script type="module">
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+class DatePickerBasicDemos extends DemoReadyEventEmitter(DatePickerDemo(PolymerElement)) {
+  static get is() {
+    return 'date-picker-basic-demos';
+  }
+}
+customElements.define(DatePickerBasicDemos.is, DatePickerBasicDemos);
+</script>
 </dom-module>

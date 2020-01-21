@@ -1,12 +1,12 @@
-<link rel="import" href="../../../vaadin-lumo-styles/color.html">
-<link rel="import" href="../../../vaadin-lumo-styles/sizing.html">
-<link rel="import" href="../../../vaadin-lumo-styles/spacing.html">
-<link rel="import" href="../../../vaadin-lumo-styles/style.html">
-<link rel="import" href="../../../vaadin-lumo-styles/typography.html">
+import 'vaadin-lumo-styles/color.js';
+import 'vaadin-lumo-styles/sizing.js';
+import 'vaadin-lumo-styles/spacing.js';
+import 'vaadin-lumo-styles/style.js';
+import 'vaadin-lumo-styles/typography.js';
+import 'vaadin-button/theme/lumo/vaadin-button.js';
+const $_documentContainer = document.createElement('template');
 
-<link rel="import" href="../../../vaadin-button/theme/lumo/vaadin-button.html">
-
-<dom-module id="lumo-date-picker-overlay-content" theme-for="vaadin-date-picker-overlay-content">
+$_documentContainer.innerHTML = `<dom-module id="lumo-date-picker-overlay-content" theme-for="vaadin-date-picker-overlay-content">
   <template>
     <style>
       :host {
@@ -132,7 +132,7 @@
       /* Today and Cancel buttons */
 
       /* TODO: Would be great if I could apply the "tertiary" theme from here instead of copying those styles */
-      [part="toolbar"] [part$="button"] {
+      [part="toolbar"] [part\$="button"] {
         background-color: transparent;
         margin: 0;
         min-width: 0;
@@ -215,4 +215,6 @@
       }
     </style>
   </template>
-</dom-module>
+</dom-module>`;
+
+document.head.appendChild($_documentContainer.content);

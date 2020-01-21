@@ -1,7 +1,8 @@
-<link rel="import" href="../../../vaadin-material-styles/color.html">
-<link rel="import" href="../../../vaadin-material-styles/typography.html">
+import 'vaadin-material-styles/color.js';
+import 'vaadin-material-styles/typography.js';
+const $_documentContainer = document.createElement('template');
 
-<dom-module id="material-date-picker-month-calendar" theme-for="vaadin-month-calendar">
+$_documentContainer.innerHTML = `<dom-module id="material-date-picker-month-calendar" theme-for="vaadin-month-calendar">
   <template>
     <style>
       :host {
@@ -116,4 +117,6 @@
       }
     </style>
   </template>
-</dom-module>
+</dom-module>`;
+
+document.head.appendChild($_documentContainer.content);

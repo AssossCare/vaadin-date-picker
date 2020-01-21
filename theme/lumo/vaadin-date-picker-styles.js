@@ -1,9 +1,9 @@
-<link rel="import" href="../../../vaadin-lumo-styles/font-icons.html">
-<link rel="import" href="../../../vaadin-lumo-styles/mixins/field-button.html">
+import 'vaadin-lumo-styles/font-icons.js';
+import 'vaadin-lumo-styles/mixins/field-button.js';
+import 'vaadin-text-field/theme/lumo/vaadin-text-field.js';
+const $_documentContainer = document.createElement('template');
 
-<link rel="import" href="../../../vaadin-text-field/theme/lumo/vaadin-text-field.html">
-
-<dom-module id="lumo-date-picker" theme-for="vaadin-date-picker">
+$_documentContainer.innerHTML = `<dom-module id="lumo-date-picker" theme-for="vaadin-date-picker">
   <template>
     <style include="lumo-field-button">
       :host {
@@ -25,4 +25,6 @@
       }
     </style>
   </template>
-</dom-module>
+</dom-module>`;
+
+document.head.appendChild($_documentContainer.content);

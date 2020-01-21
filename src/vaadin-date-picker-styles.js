@@ -1,6 +1,7 @@
-<link rel="import" href="../../polymer/lib/elements/custom-style.html">
+import '@polymer/polymer/lib/elements/custom-style.js';
+const $_documentContainer = document.createElement('template');
 
-<dom-module id="vaadin-date-picker-overlay-styles" theme-for="vaadin-date-picker-overlay">
+$_documentContainer.innerHTML = `<dom-module id="vaadin-date-picker-overlay-styles" theme-for="vaadin-date-picker-overlay">
   <template>
     <style>
       :host {
@@ -30,4 +31,6 @@
       }
     </style>
   </template>
-</dom-module>
+</dom-module>`;
+
+document.head.appendChild($_documentContainer.content);
