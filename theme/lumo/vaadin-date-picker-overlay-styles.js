@@ -1,6 +1,6 @@
-import 'vaadin-lumo-styles/sizing.js';
-import 'vaadin-lumo-styles/spacing.js';
-import 'vaadin-lumo-styles/mixins/menu-overlay.js';
+import '@vaadin/vaadin-lumo-styles/sizing.js';
+import '@vaadin/vaadin-lumo-styles/spacing.js';
+import '@vaadin/vaadin-lumo-styles/mixins/menu-overlay.js';
 const $_documentContainer = document.createElement('template');
 
 $_documentContainer.innerHTML = `<dom-module id="lumo-date-picker-overlay" theme-for="vaadin-date-picker-overlay">

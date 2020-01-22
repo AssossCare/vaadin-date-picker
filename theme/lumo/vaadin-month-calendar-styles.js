@@ -1,8 +1,8 @@
-import 'vaadin-lumo-styles/color.js';
-import 'vaadin-lumo-styles/sizing.js';
-import 'vaadin-lumo-styles/spacing.js';
-import 'vaadin-lumo-styles/style.js';
-import 'vaadin-lumo-styles/typography.js';
+import '@vaadin/vaadin-lumo-styles/color.js';
+import '@vaadin/vaadin-lumo-styles/sizing.js';
+import '@vaadin/vaadin-lumo-styles/spacing.js';
+import '@vaadin/vaadin-lumo-styles/style.js';
+import '@vaadin/vaadin-lumo-styles/typography.js';
 const $_documentContainer = document.createElement('template');
 
 $_documentContainer.innerHTML = `<dom-module id="lumo-month-calendar" theme-for="vaadin-month-calendar">

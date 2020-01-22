@@ -1,5 +1,5 @@
-import 'vaadin-lumo-styles/font-icons.js';
-import 'vaadin-lumo-styles/mixins/field-button.js';
+import '@vaadin/vaadin-lumo-styles/font-icons.js';
+import '@vaadin/vaadin-lumo-styles/mixins/field-button.js';
 import '@vaadin/vaadin-text-field/theme/lumo/vaadin-text-field.js';
 const $_documentContainer = document.createElement('template');
 
