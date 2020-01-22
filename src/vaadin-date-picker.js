@@ -13,7 +13,7 @@ import { ControlStateMixin } from '@vaadin/vaadin-control-state-mixin/vaadin-con
 import './vaadin-date-picker-overlay.js';
 import './vaadin-date-picker-overlay-content.js';
 import { DatePickerMixin } from './vaadin-date-picker-mixin.js';
-import 'vaadin-text-field/src/vaadin-text-field.js';
+import '@vaadin/vaadin-text-field/src/vaadin-text-field.js';
 import { ElementMixin } from '@vaadin/vaadin-element-mixin/vaadin-element-mixin.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
