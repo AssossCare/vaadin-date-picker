@@ -198,21 +198,20 @@ class DatePickerOverlayContentElement extends
       </vaadin-infinite-scroller>
     </div>
 
-    <template is="dom-if" if="[[canBeFuzzy]]">
-      <div on-touchend="_preventDefault" role="toolbar" part="toolbar">
-        <vaadin-button id="thisMonthButton" part="today-button" disabled="[[!_isThisMonthAllowed(minDate, maxDate,canBeFuzzy)]]" on-tap="_onThisMonthTap">
-          [[i18n.thisMonth]]
-        </vaadin-button>
-        <vaadin-button id="thisYearButton" part="today-button" disabled="[[!_isThisYearAllowed(minDate, maxDate,canBeFuzzy)]]" on-tap="_onThisYearTap">
-          [[i18n.thisYear]]
-        </vaadin-button>
-      </div>
-    </template>
-
     <div on-touchend="_preventDefault" role="toolbar" part="toolbar">
       <vaadin-button id="todayButton" part="today-button" disabled="[[!_isTodayAllowed(minDate, maxDate)]]" on-tap="_onTodayTap">
         [[i18n.today]]
       </vaadin-button>
+
+      <template is="dom-if" if="[[canBeFuzzy]]">
+          <vaadin-button id="thisMonthButton" part="today-button" disabled="[[!_isThisMonthAllowed(minDate, maxDate,canBeFuzzy)]]" on-tap="_onThisMonthTap">
+            [[i18n.thisMonth]]
+          </vaadin-button>
+          <vaadin-button id="thisYearButton" part="today-button" disabled="[[!_isThisYearAllowed(minDate, maxDate,canBeFuzzy)]]" on-tap="_onThisYearTap">
+            [[i18n.thisYear]]
+          </vaadin-button>
+      </template>
+
       <vaadin-button id="cancelButton" part="cancel-button" on-tap="_cancel">
         [[i18n.cancel]]
       </vaadin-button>
